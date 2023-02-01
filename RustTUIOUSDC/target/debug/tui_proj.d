@@ -1,1 +1,1 @@
-/home/jy/repos/RustBlackBoardTUI/RustTUIOUSDC/target/debug/tui_proj: /home/jy/repos/RustBlackBoardTUI/RustTUIOUSDC/src/main.rs
+/Users/bradyphelps/Mac/Desktop/Classes/Spring\ 2023/CS3560/GitHubRust/RustBlackBoardTUI/RustTUIOUSDC/target/debug/tui_proj: /Users/bradyphelps/Mac/Desktop/Classes/Spring\ 2023/CS3560/GitHubRust/RustBlackBoardTUI/RustTUIOUSDC/src/main.rs
