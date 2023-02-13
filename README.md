@@ -12,5 +12,9 @@ Rust TUI for Software Tools project utilizing the Blackboard API.
   <tr>
   <th> Week Thirteen/Fourteen </th> <td> Presentation </td>
   </tr>
+  <p>
+  Application key: ce31db42-b1ee-4e32-9292-1590d37a06fd
+  Application ID: c519c128-4b77-4fd7-93da-6c3738a5fabb
+  </p>
 
 </table>
