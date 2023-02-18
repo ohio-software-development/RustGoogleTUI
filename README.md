@@ -1,6 +1,5 @@
 # RustBlackBoardTUI
-Rust TUI for Software Tools project utilizing the Blackboard API.
-CS3560 section 100
+Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 section 100.
 
 ### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
