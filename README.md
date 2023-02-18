@@ -1,21 +1,21 @@
-## RustBlackBoardTUI
+# RustBlackBoardTUI
 Rust TUI for Software Tools project utilizing the Blackboard API.
 CS3560 section 100
 
-# Team Members
+### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 
-# Project Discription 
+### Project Discription 
 This will be a Terminal User Interface (TUI) for Blackboard. The user will be able to log in, check assigments, and check their grades.
 
-# Technology User
+### Technology User
 Rust and the blackboard API will be used to create the project.
 
-# Deployment
+### Deployment
 Move into "RustBlackBoardTUI/RustTUIOUSDC"
 run "cargo run"
 
-# Github Repo
+### Github Repo
 https://github.com/ohio-software-development/RustBlackBoardTUI/edit/main/README.md
 
 <h1> Schedule </h1>
