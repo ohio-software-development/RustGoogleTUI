@@ -15,7 +15,7 @@ Move into "RustBlackBoardTUI/RustTUIOUSDC"
 run "cargo run"
 
 ### Github Repo
-https://github.com/ohio-software-development/RustBlackBoardTUI/edit/main/README.md
+https://github.com/ohio-software-development/RustBlackBoardTUI
 
 <h1> Schedule </h1>
 <table>
