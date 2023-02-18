@@ -8,7 +8,7 @@ Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 This will be a Terminal User Interface (TUI) for Blackboard. The user will be able to log in, check assigments, and check their grades. 
 Idealy, it would also be possible for the user to interact with an outside calander.  
 
-### Technology User
+### Technology Used
 Rust and the blackboard API will be used to create the project.
 
 ### Deployment
