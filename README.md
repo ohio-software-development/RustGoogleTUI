@@ -17,6 +17,8 @@ run "cargo run"
 ### Github Repo
 https://github.com/ohio-software-development/RustBlackBoardTUI
 
+---------------------
+
 <h1> Schedule </h1>
 <table>
   <tr> <th> Week One </th> <td> Work out rough design/sketch of application.  Establish roles</td>
