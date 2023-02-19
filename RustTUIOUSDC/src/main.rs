@@ -1,14 +1,27 @@
 use cursive::views::{TextView, Dialog};
 use cursive::{Cursive, CursiveExt};
 
-//This is Preston's test main.rs
 
-fn main(){
-    let mut siv = Cursive::new();
+fn main() {
+    // Creates the cursive root - required for every application.
+    let mut siv = cursive::default();
 
-    siv.add_layer(TextView::new("Welcome to the BlackBoard TUI!\nPress p to quit."));
+    // Creates a dialog with a single "Quit" button
+    siv.add_layer(Dialog::around(TextView::new("Blackboard Rust TUI"))
+        .title("Menu")
+        .button("Login", |s| s.quit())
+        .button("Team Members", |s| s.add_layer(
+            Dialog::around(TextView::new("Brady Phelps\nMichael Tan\nnPreston Rembis\nAlex Bikowski"))
+            .button("Back", |s| s.quit())
+        
+        ))
+        .button("Quit", |s| s.quit())
+                        
+    );
 
-    siv.add_global_callback('p', |s| s.quit());
-    
+    siv.add_global_callback('q', |s| s.quit());
+
+    // Starts the event loop.
     siv.run();
 }
+
