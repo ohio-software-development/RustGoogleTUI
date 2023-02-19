@@ -1,4 +1,4 @@
-use cursive::views::{TextView, Dialog};
+use cursive::views::{TextView, Dialog, EditView};
 use cursive::{Cursive, CursiveExt};
 
 
@@ -11,7 +11,29 @@ fn main() {
         .title("Menu")
         
         // button where login will occur
-        .button("Login", |s| s.quit())
+        .button("Login", |s| s.add_layer(
+
+            // text box for username 
+            Dialog::around(EditView::new()
+    
+            
+            )
+            .title("Username")
+            .button("Enter", |s| s.add_layer(
+
+                // text box for password
+                Dialog::around(EditView::new()
+    
+            
+                )
+                .title("Password")
+                .button("Enter", |s| s.quit())
+                .button("Cancel", |s| s.quit())
+
+            ))
+            .button("Cancel", |s| s.quit())
+
+        ))
 
         // button to display team members
         .button("Team Members", |s| s.add_layer(
