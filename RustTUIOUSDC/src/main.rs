@@ -37,7 +37,7 @@ fn main() {
 
         // button to display team members
         .button("Team Members", |s| s.add_layer(
-            Dialog::info("Brady Phelps\nMichael Tan\nnPreston Rembis\nAlex Bikowski")
+            Dialog::info("Brady Phelps\nMichael Tan\nPreston Rembis\nAlex Bikowski")
         ))
 
         // button to exit TUI
