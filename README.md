@@ -12,8 +12,8 @@ Idealy, it would also be possible for the user to interact with an outside calan
 Rust and the blackboard API will be used to create the project.
 
 ### Deployment
-Move into "RustBlackBoardTUI/RustTUIOUSDC"
-run "cargo run"
+1. cd RustBlackBoardTUI/RustTUIOUSDC
+2. cargo run
 
 ### Github Repo
 https://github.com/ohio-software-development/RustBlackBoardTUI
