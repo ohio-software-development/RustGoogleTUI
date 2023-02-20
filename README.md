@@ -1,4 +1,9 @@
-# RustBlackBoardTUI
+# RustBlackBoardTUI Authentication Branch
+
+This is the Authentication Branch which will be used to code features regarding the authentication process on Blackboard 
+
+----------------
+
 Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 section 100.
 
 ### Team Members
