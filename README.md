@@ -1,4 +1,8 @@
-# RustBlackBoardTUI
+# RustBlackBoardTUI Dev Branch
+
+This is the Developer Branch which will be used to test new features and which through pull requests, will be merged with the main branch after successful testing.
+
+------------------------
 Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 section 100.
 
 ### Team Members
