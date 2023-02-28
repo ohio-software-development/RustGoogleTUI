@@ -6,6 +6,9 @@ This is the Authentication Branch which will be used to code features regarding 
 
 Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 section 100.
 
+### Recent Update for team if cloning this to test API!!
+You need the token.json file and to be added as a tester to the project so reach out to me (Brady) so I can set up your correct gmail account and send you the client secret in the token.json
+
 ### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 
