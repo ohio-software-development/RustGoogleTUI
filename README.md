@@ -8,7 +8,8 @@ Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 sect
 
 ### Recent Update for team if cloning this to test API!!
 You need the token.json file and to be added as a tester to the project so reach out to me (Brady) so I can set up your correct gmail account and send you the client secret in the token.json
-
+<img width="655" alt="Screenshot 2023-02-28 at 2 59 40 PM" src="https://user-images.githubusercontent.com/57198128/221966705-4b61bb14-7f94-4bff-8c5f-65314bc43842.png">
+</br>Still need to work out content transfer decoding 
 ### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 
