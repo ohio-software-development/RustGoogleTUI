@@ -15,6 +15,12 @@ fn main() {
             .button("Back", |s| s.quit())
         
         ))
+        .button("How to Use", |s| s.add_layer(
+
+            Dialog::info("change buttons using the arrow keys and press enter to click a button. q quits the TUI. Additional buttons to quit like the one bellow will appear. buttons can also be clicked using your mouse.")
+            .button("Quit", |s| s.quit())
+
+        ))
         .button("Quit", |s| s.quit())
                         
     );
