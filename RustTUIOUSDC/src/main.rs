@@ -5,6 +5,9 @@ use cursive::{Cursive, CursiveExt};
 fn main() {
     // Creates the cursive root - required for every application.
     let mut siv = cursive::default();
+    
+    let mut standard = String.new();
+    io::stdin().readLine();
 
     // Creates a dialog with a single "Quit" button
     siv.add_layer(Dialog::around(TextView::new("Blackboard Rust TUI"))
