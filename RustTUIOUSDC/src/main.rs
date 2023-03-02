@@ -7,21 +7,44 @@ fn main() {
     let mut siv = cursive::default();
 
     // Creates a dialog with a single "Quit" button
-    siv.add_layer(Dialog::around(TextView::new("Blackboard Rust TUI"))
+    let _main_menu = Dialog::new()
         .title("Menu")
+        .content(TextView::new("Blackboard Rust TUI"))
         .button("Login", |s| s.quit())
-        .button("Team Members", |s| s.add_layer(
-            Dialog::around(TextView::new("Brady Phelps\nMichael Tan\nnPreston Rembis\nAlex Bikowski"))
-            .button("Back", |s| s.quit())
-        
-        ))
-        .button("Quit", |s| s.quit())
-                        
-    );
+        .button("Team Members", open_subdialog)
+        .button("Quit", |s| s.quit());
+
+    siv.add_layer(_main_menu);
 
     siv.add_global_callback('q', |s| s.quit());
+    
 
-    // Starts the event loop.
     siv.run();
 }
 
+fn open_subdialog(siv: &mut Cursive)
+{
+    siv.pop_layer();
+
+    siv.add_layer(
+        Dialog::new()
+            .title("Team Members")
+            .content(TextView::new("Brady Phelps\nMichael Tan\nPreston Rembis\nAlex Bikowski"))
+            .button("Back", go_back_to_main_dialog),
+    );
+}
+
+fn go_back_to_main_dialog(siv: &mut Cursive) {
+    // Remove the subdialog box
+    siv.pop_layer();
+
+    // Show the main dialog box
+    siv.add_layer(
+        Dialog::new()
+            .title("Menu")
+            .content(TextView::new("Blackboard Rust TUI"))
+            .button("Login", |s| s.quit())
+            .button("Team Members", open_subdialog)
+            .button("Quit", |s| s.quit())
+    );
+}
