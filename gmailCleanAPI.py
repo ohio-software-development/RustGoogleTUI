@@ -80,6 +80,15 @@ def get_mime_message(service, msg_id):
   except Exception as error:
     print('An error occurred: %s' % error)
 
+
+
+def getSnippet(service, msg_id):
+    try:
+        message = service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
+        print('Message snippet: %s' % message['snippet'])
+    except Exception as error:
+        print('An error occurred: %s' % error)
+        
 #credentials for OAUTH
 creds = credentials()
 
@@ -91,10 +100,14 @@ x = 0
 numMail = 0
 numMail = input("How many emails would you like to see?")
 
+f = open("mail-data.txt", 'w')
+
 # output numMail mails
 while x < int(numMail):
-    get_mime_message(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
+    to_insert = get_mime_message(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
+    f.write(str(to_insert))
     x+=1
+
 
 
 
