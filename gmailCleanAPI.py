@@ -86,6 +86,7 @@ def getSnippet(service, msg_id):
     try:
         message = service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
         print('Message snippet: %s' % message['snippet'])
+        return message
     except Exception as error:
         print('An error occurred: %s' % error)
         
@@ -102,12 +103,23 @@ numMail = input("How many emails would you like to see?")
 
 f = open("mail-data.txt", 'w')
 
+x = 0
 # output numMail mails
 while x < int(numMail):
+    f.write("EMAILMIME#" + str(x))
     to_insert = get_mime_message(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
     f.write(str(to_insert))
     x+=1
 
+# output snippets
+x = 0
+while x < 3:
+    f.write("EMAILSNIPPET#" + str(x))
+    to_insert = getSnippet(build('gmail','v1', credentials=creds),lst['messages'][x]['id'])
+    f.write(str(to_insert))
+    x += 1
 
-
+# output profile
+f.write("EMAILPROFILE#000000")
+f.write(str(getProfile(creds)))
 
