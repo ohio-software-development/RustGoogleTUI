@@ -1,8 +1,7 @@
 use cursive::theme::{Color, Theme, PaletteColor, BaseColor};
-use cursive::view::Margins;
 use cursive::views::{TextView, Dialog};
 use cursive::{Cursive, CursiveExt};
-
+use std::fs;
 
 //Testing for Preston_test branch
 
@@ -25,7 +24,8 @@ fn main(){
         .content(TextView::new("Blackboard Rust TUI"))
         .button("Login", |s| s.quit())
         .button("Team Members", open_subdialog)
-        .button("Quit", |s| s.quit());
+        .button("Quit", |s| s.quit())
+        .button("Display File", open_file);
 
     siv.add_layer(_main_menu);
 
@@ -59,5 +59,23 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
             .button("Login", |s| s.quit())
             .button("Team Members", open_subdialog)
             .button("Quit", |s| s.quit())
+            .button("Display File", open_file)
+    );
+}
+
+fn open_file(siv: &mut Cursive) {
+    
+    siv.pop_layer();
+
+
+    let contents = fs::read_to_string("hello.txt")
+        .expect("Should have been able to read the file");
+    
+
+    siv.add_layer(
+        Dialog::new()
+        .title("input.txt")
+        .content(TextView::new(contents))
+        .button("Back", go_back_to_main_dialog)
     );
 }
