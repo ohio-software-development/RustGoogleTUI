@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import datetime
 import os.path
+import numbers
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -40,9 +41,14 @@ def main():
 
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-        print('Getting the upcoming 10 events')
+        eventNumber = input('Enter Number of Events to List: ')
+        while(not eventNumber.isdigit()):
+            
+            eventNumber = input('Error! Enter Number of Events to List: ')
+            
+        print('Getting the upcoming ' + eventNumber + ' events')
         events_result = service.events().list(calendarId='primary', timeMin=now,
-                                              maxResults=10, singleEvents=True,
+                                              maxResults=eventNumber, singleEvents=True,
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
 
