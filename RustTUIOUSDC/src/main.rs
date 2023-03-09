@@ -1,5 +1,5 @@
 use cursive::theme::{Color, Theme, PaletteColor, BaseColor};
-use cursive::views::{TextView, Dialog};
+use cursive::views::{TextView, Dialog, EditView};
 use cursive::{Cursive, CursiveExt};
 use std::fs;
 
@@ -78,4 +78,16 @@ fn open_file(siv: &mut Cursive) {
         .content(TextView::new(contents))
         .button("Back", go_back_to_main_dialog)
     );
+}
+
+fn input_string(siv: &mut Cursive) {
+    siv.add_layer(
+        Dialog::new()
+            .title("enter file name")
+            .padding_lrtb(1, 1, 1, 0)
+            .content(
+                EditView::new()
+                .on_submit(open_file(siv))
+            )
+    )
 }
