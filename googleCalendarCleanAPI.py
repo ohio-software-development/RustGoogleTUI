@@ -39,6 +39,8 @@ def main():
     try:
         service = build('calendar', 'v3', credentials=creds)
 
+        fromDate = datetime.datetime(2023,3,24).isoformat() + 'Z'
+        toDate = datetime.datetime(2023,3,24,23,59,59).isoformat() + 'Z'
         # Call the Calendar API
         now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
         eventNumber = input('Enter Number of Events to List: ')
@@ -47,7 +49,7 @@ def main():
             eventNumber = input('Error! Enter Number of Events to List: ')
             
         print('Getting the upcoming ' + eventNumber + ' events')
-        events_result = service.events().list(calendarId='primary', timeMin=now,
+        events_result = service.events().list(calendarId='primary', timeMin=fromDate,timeMax=toDate,
                                               maxResults=eventNumber, singleEvents=True,
                                               orderBy='startTime').execute()
         events = events_result.get('items', [])
@@ -60,6 +62,8 @@ def main():
         for event in events:
             start = event['start'].get('dateTime', event['start'].get('date'))
             print(start, event['summary'])
+            pptest = event['start'].get('dateTime')
+            print(pptest)
 
     except HttpError as error:
         print('An error occurred: %s' % error)

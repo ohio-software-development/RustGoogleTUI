@@ -6,3 +6,7 @@ target
 *.txt
 
 client
+
+gmailCleanAPI.py
+
+test.py
