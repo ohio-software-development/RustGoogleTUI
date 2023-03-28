@@ -65,7 +65,8 @@ def inputDate():
             print('Error! Date is not valid.')
         except(TypeError):
             print('Error! Invalid input.')
-        return fromDate,toDate
+            
+    return fromDate,toDate
 
 
 # Displays all events that happened on a day as specified by the user.
