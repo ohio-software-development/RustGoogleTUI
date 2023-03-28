@@ -4,6 +4,8 @@ import datetime
 import os.path
 import numbers
 
+import time 
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,6 +15,9 @@ from googleapiclient.errors import HttpError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
+# Month Constant 
+MONTHS_LENGTH = [31,28,31,30,31,30,31,31,30,31,30,31]
+MONTHS_LENGTH_LEAP = [31,29,31,30,31,30,31,31,30,31,30,31]
 
 def main():
     """Shows basic usage of the Google Calendar API.
@@ -92,7 +97,50 @@ def displayEvents(service):
         print(start, event['summary'])
         pptest = event['start'].get('dateTime')
         print(pptest)
+        
+# is_leap
+# Checks if the year input is a leap year
+# returns true if it is and false otherwise 
+def is_leap(year):
+    if (year % 100 == 0):
+        if (year % 400):
+            return True
+    if (year % 4 == 0):
+        return True 
+    return False 
 
+# getOneWeeksDate
+# Get a weeks worth of dates
+# returns the dates
+def getOneWeeksDate():
+    now = time.localtime()
+    now_string = time.strftime("%D", now)
+    minute_string = time.strftime("%H:%M:%S", now)
+    
+    start_day = now.tm_mday
+    start_month = now.tm_mon
+    start_year = now.tm_year
+
+    months = MONTHS_LENGTH
+    if (is_leap(start_year)):
+        months = MONTHS_LENGTH_LEAP
+
+    end_day = start_day + 7
+    end_month = start_month
+    end_year = start_year
+    if (end_day > months[start_month-1]):
+        if (start_month < 12):
+            difference = end_day - months[start_month-1] 
+            end_month = start_month + 1
+            end_day = difference
+        else:
+            difference = end_day - months[0] 
+            end_month = 1 
+            end_day = difference
+
+    start = datetime.datetime(start_year, start_month, start_day, 0,0,0).isoformat()
+    end = datetime.datetime(end_year, end_month, end_day, 0,0,0).isoformat()
+    return start, end
 
 if __name__ == '__main__':
     main()    
