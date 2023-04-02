@@ -80,6 +80,7 @@ fn open_file(siv: &mut Cursive) {
     );
 }
 
+/*
 fn input_string(siv: &mut Cursive) {
     siv.add_layer(
         Dialog::new()
@@ -91,3 +92,5 @@ fn input_string(siv: &mut Cursive) {
             )
     )
 }
+
+*/
