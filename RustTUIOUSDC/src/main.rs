@@ -1,9 +1,11 @@
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
 use cursive::views::{Dialog, EditView, LinearLayout, TextView};
-use cursive::{event, menu, Cursive, CursiveExt};
+use cursive::{event, menu, Cursive, CursiveExt, View, Vec2};
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
+
+
 
 mod image_view;
 
@@ -122,6 +124,9 @@ fn gmail(siv: &mut Cursive) {
         .expect("failed to execute process");
 
     let hello = output.stdout;
+
+    /// need buffer to make this fit correctly
+
 
     let layout = LinearLayout::vertical()
         .child(TextView::new("Gmail:"))
