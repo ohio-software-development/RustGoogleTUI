@@ -1,3 +1,8 @@
+
+# ------------------------------------------------------------
+# File to save events on date input by user into calendar.txt
+# ------------------------------------------------------------
+
 from __future__ import print_function
 
 import datetime
