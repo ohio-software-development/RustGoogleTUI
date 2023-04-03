@@ -1,3 +1,8 @@
+
+# ------------------------------------------------------------
+# File to save events during week into calendar.txt
+# ------------------------------------------------------------
+
 from __future__ import print_function
 
 import datetime
