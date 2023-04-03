@@ -75,6 +75,7 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
         )
         .add_subtree("Team", friends_tree)
         .add_leaf("Gmail", gmail)
+        .add_leaf("Calender", calender)
         .add_leaf("Logout", |s| s.quit());
 
     // Show the main dialog box
@@ -133,6 +134,12 @@ fn gmail(siv: &mut Cursive) {
     // Show the main dialog box
     let gmail_layer = Dialog::around(layout).button("Back", go_back_to_main_dialog);
     siv.add_layer(gmail_layer);
+}
+
+fn calender(siv: &mut Cursive) {
+
+    siv.quit()
+
 }
 
 fn save_mail(_: &mut Cursive, x: &str) {
