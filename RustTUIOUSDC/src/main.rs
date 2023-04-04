@@ -138,7 +138,69 @@ fn gmail(siv: &mut Cursive) {
 
 fn calender(siv: &mut Cursive) {
 
-    siv.quit()
+    // Reads the information in calender.txt
+
+    let file_text = fs::read_to_string("calender.txt")
+        .expect("calender.txt not read");
+
+    
+    // Text that is left to be searched 
+    let mut text_left = &file_text[0..file_text.len()];
+
+    // text that is left 
+    let mut bar_index_option = text_left.find("|");
+    let mut bar_index = 1;
+
+    let mut going = true; 
+    while (going) {
+
+        // get day
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None => siv.quit(),
+        }
+
+        let day = &text_left[0..bar_index];
+
+        // get title
+        text_left = &text_left[bar_index+1..text_left.len()];
+        bar_index_option = text_left.find("|");
+
+        match bar_index_option {
+
+            Some(x) => bar_index = x,
+            None => siv.quit(),
+
+        }
+
+        let title = &text_left[0..bar_index];
+
+        // get start 
+        text_left = &text_left[bar_index+1..text_left.len()];
+        bar_index_option = text_left.find("|");
+        match bar_index_option {
+
+            Some(x) => bar_index = x,
+            None => siv.quit() 
+
+        }   
+
+        let start = &text_left[0..bar_index];
+
+        // check if more events exit
+        if bar_index + 1 >= text_left.len() {
+
+            going = false;
+
+        } else {
+
+            text_left = &text_left[bar_index+2..text_left.len()];
+
+        }
+
+        println!("{text_left}");
+
+    }
 
 }
 
