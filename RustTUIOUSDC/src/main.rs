@@ -204,6 +204,7 @@ fn calender(siv: &mut Cursive) {
 
 }
 
+
 fn save_mail(_: &mut Cursive, x: &str) {
     let data = x;
     fs::write("description.txt", data).expect("Unable to write file");
