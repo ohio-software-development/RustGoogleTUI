@@ -5,8 +5,10 @@ Rust TUI for Software Tools project utilizing the Google API for CS3560 section 
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 
 ### Project Discription 
+
 This will be a Text User Interface (TUI) for Google. The user will be able to log in, check the Gmail inbox, and look at emails.
 Idealy, it would also be possible for the user to interact with the calander.  
+
 
 ### Technology Used
 Rust and the Google API will be used to create the project.

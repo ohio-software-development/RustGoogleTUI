@@ -1,1 +1,12 @@
 target
+*.json
+
+/Old
+
+*.txt
+
+client
+
+gmailCleanAPI.py
+
+test.py
