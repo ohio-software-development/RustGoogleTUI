@@ -86,6 +86,7 @@ def getSnippet(service, msg_id):
     try:
         message = service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
         print('Message snippet: %s' % message['snippet'])
+        return message['snippet']
     except Exception as error:
         print('An error occurred: %s' % error)
         
@@ -100,14 +101,16 @@ x = 0
 numMail = 0
 numMail = input("How many emails would you like to see?")
 
-f = open("./RustTUIOUSDC/description.text", 'w')
+f = open("./description.txt", 'w')
 
 # output numMail mails
 while x < int(numMail):
-    to_insert = get_mime_message(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
+    key = "APIMAIL#" + str(x) + "\n"
+    #to_insert = get_mime_message(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
+    to_insert = getSnippet(build('gmail','v1', credentials=creds), lst['messages'][x]['id'])
+    f.write(key)
     f.write(str(to_insert))
     x+=1
-
 
 
 

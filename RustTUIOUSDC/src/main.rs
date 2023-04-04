@@ -1,10 +1,12 @@
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
-use cursive::views::{Dialog, EditView, LinearLayout, TextView};
-use cursive::{event, menu, Cursive, CursiveExt};
+use cursive::views::{Dialog, EditView, LinearLayout, TextView, Button, OnEventView, SelectView};
+use cursive::{event, menu, Cursive, CursiveExt, View};
+use cursive::event::EventResult;
+use cursive::align::HAlign;
+use cursive::traits::*;
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
-
 mod image_view;
 
 fn main() {
@@ -75,7 +77,7 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
         )
         .add_subtree("Team", friends_tree)
         .add_leaf("Gmail", gmail)
-        .add_leaf("Calender", calender)
+        .add_leaf("Calendar", calendar)
         .add_leaf("Logout", |s| s.quit());
 
     // Show the main dialog box
@@ -112,36 +114,126 @@ fn swap_data(siv: &mut Cursive, name: &str) {
 }
 
 fn gmail(siv: &mut Cursive) {
+    siv.pop_layer(); //Getting rid of previous layer
+
     let recent_email =
         fs::read_to_string("description.txt").expect("Should have been able to read the file");
+    let until = "APIMAIL#1"; //Email 1 indicator
+    let positionPlace = match recent_email.find(until){ //Finds position of APIMAIL#1 in recent_email string
+        Some(pos) => pos,
+        None => recent_email.len(),
+    };
 
+    let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
+
+    //Counting how many emails there are in description.txt
+    let mut counter = 0;
+    let mut isMail = true;
+    while isMail {
+        let untilNum = format!("{}{}", "APIMAIL#", counter);
+        let positionOfAPIMAIL = match recent_email.find(&untilNum){
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+        if positionOfAPIMAIL != recent_email.len()
+        {
+            counter += 1;
+        }
+        else{
+            isMail = false;
+        }
+    }
+
+    let mut select = SelectView::new()
+        .autojump();
+
+    for i in 0..counter{
+        let show = i + 1;
+        select.add_item(show.to_string(), i);
+    }
+
+    select.set_on_submit(go_to_next_email);
+
+    let select = OnEventView::new(select)
+        .on_pre_event_inner('k', |s, _| {
+            let cb = s.select_up(1);
+            Some(EventResult::Consumed(Some(cb)))
+        })
+        .on_pre_event_inner('j', |s, _| {
+            let cb = s.select_down(1);
+            Some(EventResult::Consumed(Some(cb)))
+        });
+    
+    let emailCount = format!("{}{}{}", "You have ", counter, " emails.");
     // load most recent email
-
-    let output = Command::new("Python3")
-        .args(["../gmailCleanAPI.py"])
-        .output()
-        .expect("failed to execute process");
-
-    let hello = output.stdout;
-
     let layout = LinearLayout::vertical()
-        .child(TextView::new("Gmail:"))
-        .child(TextView::new("Display:"))
-        .child(EditView::new().on_submit(save_mail).content(recent_email));
-    // Remove the subdialog box
-    siv.pop_layer();
-
-    // Show the main dialog box
-    let gmail_layer = Dialog::around(layout).button("Back", go_back_to_main_dialog);
-    siv.add_layer(gmail_layer);
+        .child(TextView::new("Most Recent Email:"))
+        .child(TextView::new(out)) //Output most recent email
+        .child(Button::new("Back", go_back_to_main_dialog)) //Go back to main menu
+        .child(TextView::new(emailCount))
+        .child(Dialog::around(select.scrollable().fixed_size((20, 10))).title("Select which email you want to view"),
+    );
+    siv.add_layer(layout);
 }
 
-fn calender(siv: &mut Cursive) {
 
-    // Reads the information in calender.txt
+fn go_to_next_email(siv: &mut Cursive, num: &i32) {
+    siv.pop_layer(); //Getting rid of previous layer
 
-    let file_text = fs::read_to_string("calender.txt")
-        .expect("calender.txt not read");
+    let numNew = *num;
+    if numNew == 0
+    {   
+        let recent_email =
+            fs::read_to_string("description.txt").expect("Should have been able to read the file");
+        let mut hold = format!("{}{}", "APIMAIL#", numNew+1);
+        let untilNum = hold.as_str();
+        let positionPlace = match recent_email.find(untilNum){ //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+    
+        let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
+    
+        let showEmail = Dialog::new()
+            .content(TextView::new(out))
+            .button("Back", gmail);
+        siv.add_layer(showEmail);
+    }
+    else{
+        let recent_email =
+            fs::read_to_string("description.txt").expect("Should have been able to read the file");
+        let mut hold1 = format!("{}{}", "APIMAIL#", numNew);
+        let untilNum1 = hold1.as_str();
+
+        let positionPlace1 = match recent_email.find(untilNum1){ //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+        
+        let mut hold2 = format!("{}{}", "APIMAIL#", numNew + 1);
+        let untilNum2 = hold2.as_str();
+        let positionPlace2 = match recent_email.find(untilNum2){ //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+    
+        let out = &recent_email[positionPlace1..positionPlace2]; //out is email file from beginning to APIMAIL#1
+    
+        let showEmail = Dialog::new()
+            .content(TextView::new(out))
+            .button("Back", gmail);
+        siv.add_layer(showEmail);
+    }
+}
+
+
+
+fn calendar(siv: &mut Cursive) {
+
+    // Reads the information in calander.txt
+
+    let file_text = fs::read_to_string("calendar.txt")
+        .expect("calendar.txt not read");
 
     
     // Text that is left to be searched 
