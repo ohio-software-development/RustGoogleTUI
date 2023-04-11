@@ -44,10 +44,10 @@ def main():
         
     while(cont):
         try:
-            print('Find All Events in a Date\n')
             service = build('calendar', 'v3', credentials=creds)
             displayEvents(service)
-            
+            addEvents(service)
+            cont = False
 
         except HttpError as error:
             print('An error occurred: %s' % error)
@@ -56,15 +56,41 @@ def main():
 # input is invalid due to use of other symbols besides numbers or
 # date specified is not valid according to the Gregorian Calendar.
 # Is used by other functions.
-def inputDate():
+def inputDate(i = 0):
     cont = True
     while(cont):
         try:
             year = input("Enter year: ")
             month = input("Enter month (in numbers): ")
             day = input("Enter day: ")
-            fromDate = datetime.datetime(int(year),int(month),int(day),0,0,0).isoformat() + 'Z'
-            toDate = datetime.datetime(int(year),int(month),int(day),23,59,59).isoformat() + 'Z'
+            if(i == 0):
+                fromDate = datetime.datetime(int(year),int(month),int(day),0,0,0).isoformat() + 'Z'
+                toDate = datetime.datetime(int(year),int(month),int(day),23,59,59).isoformat() + 'Z'
+            else:
+                endYear = year
+                endMonth = month
+                endDay = day
+                
+                fromHour = input("Enter starting hour: ")
+                fromMinute = input("Enter starting minute: ")
+                
+                ask = input("Does event have different starting date? (Y/N): ")
+                while(ask.upper() != "Y" and ask.upper() != "N"):
+                    ask = input("Error! Invalid Input. Does event have different starting date? (Y/N): ")
+                if(ask.upper() == "Y"):
+                    endYear = input("Enter end year: ")
+                    endMonth = input("Enter end month: ")
+                    endDay = input("Enter end day: ")
+                
+                
+                toHour = input("Enter ending hour: ")
+                toMinute = input("Enter ending minute: ")
+                
+                fromDate = datetime.datetime(int(year),int(month),int(day),int(fromHour),int(fromMinute),00).isoformat()
+                toDate = datetime.datetime(int(endYear),int(endMonth),int(endDay),int(toHour),int(toMinute),00).isoformat()
+                if(fromDate > toDate):
+                    raise Exception('Error! Dates are not in bound.')
+                
             cont = False      
         except(ValueError):
             print('Error! Date is not valid.')
@@ -77,11 +103,12 @@ def inputDate():
 # Displays all events that happened on a day as specified by the user.
 # Uses function inputDate to get date.
 def displayEvents(service):
+    print('Find All Events in a Date\n')
+    
     fromDate,toDate = inputDate()
         
-        # Call the Calendar API
-    now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-            
+    #now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
+    
     print('Getting the upcoming events')
     events_result = service.events().list(calendarId='primary', timeMin=fromDate,timeMax=toDate,
                                             singleEvents=True,orderBy='startTime').execute()
@@ -91,8 +118,8 @@ def displayEvents(service):
         print('No upcoming events found.')
         return
 
-    # Prints the start and name of the next 10 events
     for event in events:
+        
         start = event['start'].get('dateTime', event['start'].get('date'))
         print(start, event['summary'])
         pptest = event['start'].get('dateTime')
@@ -141,6 +168,50 @@ def getOneWeeksDate():
     start = datetime.datetime(start_year, start_month, start_day, 0,0,0).isoformat()
     end = datetime.datetime(end_year, end_month, end_day, 0,0,0).isoformat()
     return start, end
+
+
+def addEvents(service):
+    print('Add an Event in a Date\n')
+    summary = input("Enter Title of event: ")
+    description = input("Enter Description: ")
+    atList = []
+    
+    attendees = input("Enter email of an attendee (Enter q to skip): ")
+    while(attendees.upper() != 'Q'):
+        atList.append({'email': attendees})
+        attendees = input("Enter email of an attendee (Enter q to skip): ")
+        
+    fromDate, toDate = inputDate(1)
+    addInfo = input("Add Additional Information (Y/N): ")
+    
+    event = {
+    'summary': summary,
+    'description': description,
+    'start': {
+        'dateTime': fromDate,
+        'timeZone': 'UTC',
+    },
+    'end': {
+        'dateTime': toDate,
+        'timeZone': 'UTC',
+    },
+    'recurrence': [
+        'RRULE:FREQ=DAILY;COUNT=2'
+    ],
+    'attendees': atList,
+    'reminders': {
+        'useDefault': False,
+        'overrides': [
+        {'method': 'email', 'minutes': 24 * 60},
+        {'method': 'popup', 'minutes': 10},
+        ],
+    },
+    }
+    
+    
+    event = service.events().insert(calendarId='primary', body=event).execute()
+    print ('Event created: %s' % (event.get('htmlLink')))
+    return
 
 if __name__ == '__main__':
     main()    
