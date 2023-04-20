@@ -42,13 +42,13 @@ def main():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'client.json', SCOPES)
+                '../client.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
         
-    open("calendar.txt", "w")
+    open("../calendar.txt", "w")
     try:
         service = build('calendar', 'v3', credentials=creds)
         days = get_one_weeks_date()
@@ -62,7 +62,7 @@ def main():
 # Uses function inputDate to get date.
 def output_days_events(service, day):
 
-    file = open("calendar.txt", "a")
+    file = open("../calendar.txt", "a")
 
     fromDate = day.isoformat() + 'Z'
     toDate = day.replace(hour = 23, minute = 59, second = 59).isoformat() + 'Z'
@@ -72,13 +72,13 @@ def output_days_events(service, day):
     events = events_result.get('items', [])
 
     if not events:
-        file.write(day.isoformat() + "|" + 'No upcoming events found.\n')
+        file.write(day.isoformat() + "|" + 'No upcoming events found.|\n')
         return
 
     # Prints the start and name of the next 10 events
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        file.write(day.isoformat() + "|" + event['summary'] + "|" + start + "\n")
+        file.write(day.isoformat() + "|" + event['summary'] + "|\n")
         
 # is_leap
 # Checks if the year input is a leap year
