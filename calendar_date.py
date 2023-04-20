@@ -1,4 +1,5 @@
 
+
 # ------------------------------------------------------------
 # File to save events on date input by user into calendar.txt
 # ------------------------------------------------------------
@@ -61,28 +62,17 @@ def main():
 # date specified is not valid according to the Gregorian Calendar.
 # Is used by other functions.
 def inputDate():
-    cont = True
-    while(cont):
-        try:
-            year = input("Enter year: ")
-            month = input("Enter month (in numbers): ")
-            day = input("Enter day: ")
-            fromDate = datetime.datetime(int(year),int(month),int(day),0,0,0).isoformat() + 'Z'
-            toDate = datetime.datetime(int(year),int(month),int(day),23,59,59).isoformat() + 'Z'
-            cont = False      
-        except(ValueError):
-            print('Error! Date is not valid.')
-        except(TypeError):
-            print('Error! Invalid input.')
-            
-    return fromDate,toDate
+    fromDate = datetime.datetime.today()
+    toDate = datetime.datetime(int(fromDate.year),int(fromDate.month),int(fromDate.day),23,59,59)
+    
+    return fromDate.isoformat() + 'Z' ,toDate.isoformat() + 'Z'
 
 
 # Displays all events that happened on a day as specified by the user.
 # Uses function inputDate to get date.
 def output_events(service):
 
-    file = open("calendar.txt", "w")
+    file = open("../calendar.txt", "w")
 
     fromDate,toDate = inputDate()
         
@@ -91,13 +81,13 @@ def output_events(service):
     events = events_result.get('items', [])
 
     if not events:
-        print('No upcoming events found.')
+        file.write('Today|No upcoming events found.|\n')
         return
 
     # Prints the start and name of the next 10 events
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        file.write(event['summary'] + "|" + start + "\n")
+        file.write(event['summary'] + "|" + start + "|\n")
         
 if __name__ == '__main__':
     main()
