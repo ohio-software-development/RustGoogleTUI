@@ -1,15 +1,20 @@
 use cursive::align::HAlign;
 use cursive::event::EventResult;
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
-use cursive::traits::*;
-use cursive::views::{Button, Dialog, EditView, LinearLayout, OnEventView, SelectView, TextView};
+use cursive::views::{Dialog, EditView, LinearLayout, TextView, Button, OnEventView, SelectView};
 use cursive::{event, menu, Cursive, CursiveExt, View};
+use cursive::event::EventResult;
+use cursive::align::HAlign;
+use cursive::traits::*;
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
-use std::thread;
 
+use std::thread;
 mod image_view;
+
+use std::fs::File;
+use std::io::prelude::*;
 
 fn main() {
     thread::spawn(|| {
@@ -86,6 +91,7 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
                 .leaf("Sheets", open_sheets),
         )
         .add_subtree("Team", friends_tree)
+
         .add_subtree(
             "Gmail",
             menu::Tree::new()
@@ -127,6 +133,41 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     // image
     siv.add_layer(content);
 }
+
+
+fn calander_weekly(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    let mut command = Command::new("python3").arg("../calendar_week.py").spawn().expect("error");
+    command.wait().expect("error");
+
+    let mut file = std::fs::File::create("file.txt").expect("error");
+
+    let mut display_string = "".to_string();
+
+    // Reads the information in calander.txt
+
+    let file_text = fs::read_to_string("../calendar.txt")
+        .expect("calendar.txt not read");
+
+    
+    // Text that is left to be searched 
+    let mut text_left = &file_text[0..file_text.len()];
+
+    // text that is left 
+    let mut bar_index_option = None;
+    let mut bar_index = 1;
+
+    let mut going = true; 
+    while (going) {
+
+        bar_index_option = text_left.find("|");
+
+        // get day
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None =>  siv.quit(),
 
 fn send_layer(siv: &mut Cursive) {
     siv.pop_layer();
@@ -288,9 +329,11 @@ fn calendar(siv: &mut Cursive) {
         match bar_index_option {
             Some(x) => bar_index = x,
             None => siv.quit(),
+
         }
 
         let day = &text_left[0..bar_index];
+
 
         // get title
         text_left = &text_left[bar_index + 1..text_left.len()];
@@ -298,31 +341,128 @@ fn calendar(siv: &mut Cursive) {
 
         match bar_index_option {
             Some(x) => bar_index = x,
-            None => siv.quit(),
+            None =>  siv.quit(),
+
+        }
+
+        let title = &text_left[0..bar_index];
+        if (bar_index + 2 < text_left.len()) {
+
+            text_left = &text_left[bar_index+2..];
+        
+        } else {
+
+            going = false;
+
+        }
+
+        display_string = [display_string.to_string(), day.to_string(), title.to_string(), "\n".to_string()].join(" ");
+
+        file.write_all(title.as_bytes()).expect("error");
+        file.write_all(b"\n").expect("error");
+
+    }
+
+
+    let events = Dialog::new()
+    .content(TextView::new(display_string))
+    .button("Back", calendar);
+    
+    siv.add_layer(events);
+
+}
+
+
+fn calander_date(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    let mut command = Command::new("python3").arg("../calendar_date.py").spawn().expect("error");
+    command.wait().expect("error");
+
+    let mut file = std::fs::File::create("file.txt").expect("error");
+
+    let mut display_string = "".to_string();
+
+    // Reads the information in calander.txt
+
+    let file_text = fs::read_to_string("../calendar.txt")
+        .expect("calendar.txt not read");
+
+    
+    // Text that is left to be searched 
+    let mut text_left = &file_text[0..file_text.len()];
+
+    // text that is left 
+    let mut bar_index_option = None;
+    let mut bar_index = 1;
+
+    let mut going = true; 
+    while (going) {
+
+        bar_index_option = text_left.find("|");
+
+        // get day
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None =>  siv.quit(),
+        }
+
+        let day = &text_left[0..bar_index];
+
+        text_left = &text_left[bar_index+1..];
+
+        bar_index_option = text_left.find("|");
+
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None =>  siv.quit(),
         }
 
         let title = &text_left[0..bar_index];
 
-        // get start
-        text_left = &text_left[bar_index + 1..text_left.len()];
-        bar_index_option = text_left.find("|");
-        match bar_index_option {
-            Some(x) => bar_index = x,
-            None => siv.quit(),
-        }
+        if (bar_index + 2 < text_left.len()) {
 
-        let start = &text_left[0..bar_index];
-
-        // check if more events exit
-        if bar_index + 1 >= text_left.len() {
-            going = false;
+            text_left = &text_left[bar_index+2..];
+        
         } else {
-            text_left = &text_left[bar_index + 2..text_left.len()];
+
+            going = false;
+
         }
 
-        println!("{text_left}");
+        display_string = [display_string.to_string(), day.to_string(), title.to_string(), "\n".to_string()].join(" ");
+
+        file.write_all(title.as_bytes()).expect("error");
+        file.write_all(b"\n").expect("error");
+
     }
+
+
+    let events = Dialog::new()
+    .content(TextView::new(display_string))
+    .button("Back", calendar);
+    
+    siv.add_layer(events);
+
 }
+
+
+fn calendar(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    let options = Dialog::new()
+    .content(TextView::new("Options"))
+    .button("Weekly", calander_weekly)
+    .button("Daily", calander_date)
+    .button("Back", go_back_to_main_dialog);
+    
+    siv.add_layer(options)
+
+
+}
+
 
 fn save_mail(_: &mut Cursive, x: &str) {
     let data = x;
