@@ -7,16 +7,19 @@ use cursive::{event, menu, Cursive, CursiveExt, View};
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
+use std::thread;
+
 mod image_view;
 
 fn main() {
-    let output = 
-        Command::new("Python3")
+    thread::spawn(|| {
+        let output = Command::new("Python3")
             .arg("gmailLoader.py")
             .output()
             .expect("failed to execute process");
 
-    let hello = output.stdout;
+        let hello = output.stdout;
+    });
     let mut siv = Cursive::new();
 
     siv.set_theme(better_theme());
@@ -85,7 +88,9 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
         .add_subtree("Team", friends_tree)
         .add_subtree(
             "Gmail",
-            menu::Tree::new().leaf("Read", gmail).leaf("Send", send_layer),
+            menu::Tree::new()
+                .leaf("Read", gmail)
+                .leaf("Send", send_layer),
         )
         .add_leaf("Calendar", calendar)
         .add_leaf("Logout", |s| s.quit());
@@ -140,7 +145,7 @@ fn send_layer(siv: &mut Cursive) {
 }
 
 // , recipient: &str, subject: &str, message: &str
-fn send(_: &mut Cursive, message: &str){
+fn send(_: &mut Cursive, message: &str) {
     // run send email
     let output = Command::new("Python3")
         .arg("gmailCleanAPI.py")
@@ -151,7 +156,6 @@ fn send(_: &mut Cursive, message: &str){
         .expect("failed to execute process");
     let hello = output.stdout;
 }
-
 
 fn gmail(siv: &mut Cursive) {
     siv.pop_layer(); //Getting rid of previous layer
