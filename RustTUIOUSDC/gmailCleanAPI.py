@@ -10,6 +10,7 @@ from googleapiclient.errors import HttpError
 import base64
 from email.message import EmailMessage
 import email
+import sys
 
 
 
@@ -196,11 +197,18 @@ def custom_send_message(message):
 # subject = input("Whats the subject?")
 # msg_txt = input("What would you like to send?")
 sender = "bradydummy@gmail.com"
-to = "mt912321@ohio.edu"
-msg_txt = "test2"
+to = "bp309420@ohio.edu"
 subject = "testest2"
 
+
+if len(sys.argv) > 3:
+    to = sys.argv[1]
+    subject = sys.argv[2]
+    msg_txt = sys.argv[3]
+elif len(sys.argv) > 1 :
+    msg_txt = sys.argv[1]
 msg = create_message(sender, to, subject, msg_txt)
+
 custom_send_message(msg)
 
 # Python3 gmailCleanAPI.py

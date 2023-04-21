@@ -10,7 +10,6 @@ use std::process::Command;
 mod image_view;
 
 fn main() {
-
     let output = if cfg!(target_os = "windows") {
         Command::new("cmd")
             .args(["/C", "echo hello"])
@@ -90,7 +89,10 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
                 .leaf("Sheets", open_sheets),
         )
         .add_subtree("Team", friends_tree)
-        .add_leaf("Gmail", gmail)
+        .add_subtree(
+            "Gmail",
+            menu::Tree::new().leaf("Read", gmail).leaf("Send", send_layer),
+        )
         .add_leaf("Calendar", calendar)
         .add_leaf("Logout", |s| s.quit());
 
@@ -126,6 +128,36 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     // image
     siv.add_layer(content);
 }
+
+fn send_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+
+    let subject = "Type subject here...";
+    let email_msg = "Type your email here...";
+    let recipient = "Type receiver here...";
+
+    let layout = LinearLayout::vertical()
+        .child(TextView::new("Gmail:"))
+        .child(TextView::new("Display:"))
+        .child(EditView::new().content(recipient))
+        .child(EditView::new().content(subject))
+        .child(EditView::new().on_submit(send).content(email_msg));
+    siv.add_layer(layout);
+}
+
+// , recipient: &str, subject: &str, message: &str
+fn send(_: &mut Cursive, message: &str){
+    // run send email
+    let output = Command::new("Python3")
+        .arg("gmailCleanAPI.py")
+        .arg("bp309420@ohio.edu")
+        .arg("this is from Rust")
+        .arg("helllllo!")
+        .output()
+        .expect("failed to execute process");
+    let hello = output.stdout;
+}
+
 
 fn gmail(siv: &mut Cursive) {
     siv.pop_layer(); //Getting rid of previous layer
