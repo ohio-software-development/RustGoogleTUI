@@ -10,17 +10,11 @@ use std::process::Command;
 mod image_view;
 
 fn main() {
-    let output = if cfg!(target_os = "windows") {
-        Command::new("cmd")
-            .args(["/C", "echo hello"])
-            .output()
-            .expect("failed to execute process")
-    } else {
+    let output = 
         Command::new("Python3")
-            .arg("gmailCleanAPI.py")
+            .arg("gmailLoader.py")
             .output()
-            .expect("failed to execute process")
-    };
+            .expect("failed to execute process");
 
     let hello = output.stdout;
     let mut siv = Cursive::new();
