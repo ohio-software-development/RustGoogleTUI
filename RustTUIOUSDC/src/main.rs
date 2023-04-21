@@ -1,3 +1,5 @@
+use cursive::align::HAlign;
+use cursive::event::EventResult;
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
 use cursive::views::{Dialog, EditView, LinearLayout, TextView, Button, OnEventView, SelectView};
 use cursive::{event, menu, Cursive, CursiveExt, View};
@@ -7,12 +9,22 @@ use cursive::traits::*;
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
+
+use std::thread;
 mod image_view;
 
 use std::fs::File;
 use std::io::prelude::*;
 
 fn main() {
+    thread::spawn(|| {
+        let output = Command::new("Python3")
+            .arg("gmailLoader.py")
+            .output()
+            .expect("failed to execute process");
+
+        let hello = output.stdout;
+    });
     let mut siv = Cursive::new();
 
     siv.set_theme(better_theme());
@@ -79,12 +91,18 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
                 .leaf("Sheets", open_sheets),
         )
         .add_subtree("Team", friends_tree)
-        .add_leaf("Gmail", gmail)
+
+        .add_subtree(
+            "Gmail",
+            menu::Tree::new()
+                .leaf("Read", gmail)
+                .leaf("Send", send_layer),
+        )
         .add_leaf("Calendar", calendar)
         .add_leaf("Logout", |s| s.quit());
 
     // Show the main dialog box
-    let _main_menu = Dialog::around(layout).title("MyTui");
+    let _main_menu = Dialog::around(layout).title("GoogleTUI");
 
     // image
     siv.add_layer(_main_menu);
@@ -116,118 +134,6 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     siv.add_layer(content);
 }
 
-fn gmail(siv: &mut Cursive) {
-    siv.pop_layer(); //Getting rid of previous layer
-
-    let recent_email =
-        fs::read_to_string("description.txt").expect("Should have been able to read the file");
-    let until = "APIMAIL#1"; //Email 1 indicator
-    let positionPlace = match recent_email.find(until){ //Finds position of APIMAIL#1 in recent_email string
-        Some(pos) => pos,
-        None => recent_email.len(),
-    };
-
-    let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
-
-    //Counting how many emails there are in description.txt
-    let mut counter = 0;
-    let mut isMail = true;
-    while isMail {
-        let untilNum = format!("{}{}", "APIMAIL#", counter);
-        let positionOfAPIMAIL = match recent_email.find(&untilNum){
-            Some(pos) => pos,
-            None => recent_email.len(),
-        };
-        if positionOfAPIMAIL != recent_email.len()
-        {
-            counter += 1;
-        }
-        else{
-            isMail = false;
-        }
-    }
-
-    let mut select = SelectView::new()
-        .autojump();
-
-    for i in 0..counter{
-        let show = i + 1;
-        select.add_item(show.to_string(), i);
-    }
-
-    select.set_on_submit(go_to_next_email);
-
-    let select = OnEventView::new(select)
-        .on_pre_event_inner('k', |s, _| {
-            let cb = s.select_up(1);
-            Some(EventResult::Consumed(Some(cb)))
-        })
-        .on_pre_event_inner('j', |s, _| {
-            let cb = s.select_down(1);
-            Some(EventResult::Consumed(Some(cb)))
-        });
-    
-    let emailCount = format!("{}{}{}", "You have ", counter, " emails.");
-    // load most recent email
-    let layout = LinearLayout::vertical()
-        .child(TextView::new("Most Recent Email:"))
-        .child(TextView::new(out)) //Output most recent email
-        .child(Button::new("Back", go_back_to_main_dialog)) //Go back to main menu
-        .child(TextView::new(emailCount))
-        .child(Dialog::around(select.scrollable().fixed_size((20, 10))).title("Select which email you want to view"),
-    );
-    siv.add_layer(layout);
-}
-
-
-fn go_to_next_email(siv: &mut Cursive, num: &i32) {
-    siv.pop_layer(); //Getting rid of previous layer
-
-    let numNew = *num;
-    if numNew == 0
-    {   
-        let recent_email =
-            fs::read_to_string("description.txt").expect("Should have been able to read the file");
-        let mut hold = format!("{}{}", "APIMAIL#", numNew+1);
-        let untilNum = hold.as_str();
-        let positionPlace = match recent_email.find(untilNum){ //Finds position of APIMAIL#1 in recent_email string
-            Some(pos) => pos,
-            None => recent_email.len(),
-        };
-    
-        let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
-    
-        let showEmail = Dialog::new()
-            .content(TextView::new(out))
-            .button("Back", gmail);
-        siv.add_layer(showEmail);
-    }
-    else{
-        let recent_email =
-            fs::read_to_string("description.txt").expect("Should have been able to read the file");
-        let mut hold1 = format!("{}{}", "APIMAIL#", numNew);
-        let untilNum1 = hold1.as_str();
-
-        let positionPlace1 = match recent_email.find(untilNum1){ //Finds position of APIMAIL#1 in recent_email string
-            Some(pos) => pos,
-            None => recent_email.len(),
-        };
-        
-        let mut hold2 = format!("{}{}", "APIMAIL#", numNew + 1);
-        let untilNum2 = hold2.as_str();
-        let positionPlace2 = match recent_email.find(untilNum2){ //Finds position of APIMAIL#1 in recent_email string
-            Some(pos) => pos,
-            None => recent_email.len(),
-        };
-    
-        let out = &recent_email[positionPlace1..positionPlace2]; //out is email file from beginning to APIMAIL#1
-    
-        let showEmail = Dialog::new()
-            .content(TextView::new(out))
-            .button("Back", gmail);
-        siv.add_layer(showEmail);
-    }
-}
 
 fn calander_weekly(siv: &mut Cursive) {
 
@@ -262,21 +168,184 @@ fn calander_weekly(siv: &mut Cursive) {
         match bar_index_option {
             Some(x) => bar_index = x,
             None =>  siv.quit(),
+
+fn send_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+
+    let subject = "Type subject here...";
+    let email_msg = "Type your email here...";
+    let recipient = "Type receiver here...";
+
+    let layout = LinearLayout::vertical()
+        .child(TextView::new("Gmail:"))
+        .child(TextView::new("Display:"))
+        .child(EditView::new().content(recipient))
+        .child(EditView::new().content(subject))
+        .child(EditView::new().on_submit(send).content(email_msg));
+    siv.add_layer(layout);
+}
+
+// , recipient: &str, subject: &str, message: &str
+fn send(_: &mut Cursive, message: &str) {
+    // run send email
+    let output = Command::new("Python3")
+        .arg("gmailCleanAPI.py")
+        .arg("bp309420@ohio.edu")
+        .arg("this is from Rust")
+        .arg("helllllo!")
+        .output()
+        .expect("failed to execute process");
+    let hello = output.stdout;
+}
+
+fn gmail(siv: &mut Cursive) {
+    siv.pop_layer(); //Getting rid of previous layer
+
+    let recent_email =
+        fs::read_to_string("description.txt").expect("Should have been able to read the file");
+    let until = "APIMAIL#1"; //Email 1 indicator
+    let positionPlace = match recent_email.find(until) {
+        //Finds position of APIMAIL#1 in recent_email string
+        Some(pos) => pos,
+        None => recent_email.len(),
+    };
+
+    let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
+
+    //Counting how many emails there are in description.txt
+    let mut counter = 0;
+    let mut isMail = true;
+    while isMail {
+        let untilNum = format!("{}{}", "APIMAIL#", counter);
+        let positionOfAPIMAIL = match recent_email.find(&untilNum) {
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+        if positionOfAPIMAIL != recent_email.len() {
+            counter += 1;
+        } else {
+            isMail = false;
+        }
+    }
+
+    let mut select = SelectView::new().autojump();
+
+    for i in 0..counter {
+        let show = i + 1;
+        select.add_item(show.to_string(), i);
+    }
+
+    select.set_on_submit(go_to_next_email);
+
+    let select = OnEventView::new(select)
+        .on_pre_event_inner('k', |s, _| {
+            let cb = s.select_up(1);
+            Some(EventResult::Consumed(Some(cb)))
+        })
+        .on_pre_event_inner('j', |s, _| {
+            let cb = s.select_down(1);
+            Some(EventResult::Consumed(Some(cb)))
+        });
+
+    let emailCount = format!("{}{}{}", "You have ", counter, " emails.");
+    // load most recent email
+    let layout = LinearLayout::vertical()
+        .child(TextView::new("Most Recent Email:"))
+        .child(TextView::new(out)) //Output most recent email
+        .child(Button::new("Back", go_back_to_main_dialog)) //Go back to main menu
+        .child(TextView::new(emailCount))
+        .child(
+            Dialog::around(select.scrollable().fixed_size((20, 10)))
+                .title("Select which email you want to view"),
+        );
+    siv.add_layer(layout);
+}
+
+fn go_to_next_email(siv: &mut Cursive, num: &i32) {
+    siv.pop_layer(); //Getting rid of previous layer
+
+    let numNew = *num;
+    if numNew == 0 {
+        let recent_email =
+            fs::read_to_string("description.txt").expect("Should have been able to read the file");
+        let mut hold = format!("{}{}", "APIMAIL#", numNew + 1);
+        let untilNum = hold.as_str();
+        let positionPlace = match recent_email.find(untilNum) {
+            //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+
+        let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
+
+        let showEmail = Dialog::new()
+            .content(TextView::new(out))
+            .button("Back", gmail);
+        siv.add_layer(showEmail);
+    } else {
+        let recent_email =
+            fs::read_to_string("description.txt").expect("Should have been able to read the file");
+        let mut hold1 = format!("{}{}", "APIMAIL#", numNew);
+        let untilNum1 = hold1.as_str();
+
+        let positionPlace1 = match recent_email.find(untilNum1) {
+            //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+
+        let mut hold2 = format!("{}{}", "APIMAIL#", numNew + 1);
+        let untilNum2 = hold2.as_str();
+        let positionPlace2 = match recent_email.find(untilNum2) {
+            //Finds position of APIMAIL#1 in recent_email string
+            Some(pos) => pos,
+            None => recent_email.len(),
+        };
+
+        let out = &recent_email[positionPlace1..positionPlace2]; //out is email file from beginning to APIMAIL#1
+
+        let showEmail = Dialog::new()
+            .content(TextView::new(out))
+            .button("Back", gmail);
+        siv.add_layer(showEmail);
+    }
+}
+
+fn calendar(siv: &mut Cursive) {
+    // Reads the information in calander.txt
+
+    let file_text = fs::read_to_string("calendar.txt").expect("calendar.txt not read");
+
+    // Text that is left to be searched
+    let mut text_left = &file_text[0..file_text.len()];
+
+    // text that is left
+    let mut bar_index_option = text_left.find("|");
+    let mut bar_index = 1;
+
+    let mut going = true;
+    while (going) {
+        // get day
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None => siv.quit(),
+
         }
 
         let day = &text_left[0..bar_index];
 
-        text_left = &text_left[bar_index+1..];
 
+        // get title
+        text_left = &text_left[bar_index + 1..text_left.len()];
         bar_index_option = text_left.find("|");
 
         match bar_index_option {
             Some(x) => bar_index = x,
             None =>  siv.quit(),
+
         }
 
         let title = &text_left[0..bar_index];
-
         if (bar_index + 2 < text_left.len()) {
 
             text_left = &text_left[bar_index+2..];
@@ -391,6 +460,7 @@ fn calendar(siv: &mut Cursive) {
     
     siv.add_layer(options)
 
+
 }
 
 
@@ -405,7 +475,11 @@ fn open_search(siv: &mut Cursive) {
     let layout = LinearLayout::vertical()
         .child(TextView::new("Gmail:"))
         .child(TextView::new("Display:"))
-        .child(EditView::new().on_submit(search_now).content(search_message));
+        .child(
+            EditView::new()
+                .on_submit(search_now)
+                .content(search_message),
+        );
     // Remove the subdialog box
     siv.pop_layer();
 
@@ -413,7 +487,7 @@ fn open_search(siv: &mut Cursive) {
     let gmail_layer = Dialog::around(layout).button("Back", go_back_to_main_dialog);
     siv.add_layer(gmail_layer);
 }
-fn search_now (_: &mut Cursive, message: &str){
+fn search_now(_: &mut Cursive, message: &str) {
     let path = "https://www.google.com/search?q=";
     let search_path = format!("{}{}", path, message);
     match open::that(search_path.clone()) {
