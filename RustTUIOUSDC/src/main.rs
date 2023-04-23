@@ -236,7 +236,7 @@ fn calender_weekly(siv: &mut Cursive) {
     let mut command = Command::new("python3").arg("../calendar_week.py").spawn().expect("error");
     command.wait().expect("error");
 
-    let mut file = std::fs::File::create("file.txt").expect("error");
+    let mut file = std::fs::File::create("../file.txt").expect("error");
 
     let mut display_string = "".to_string();
 
