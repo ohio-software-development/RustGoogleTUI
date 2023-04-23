@@ -18,8 +18,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
-
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 # Month Constant 
 MONTHS_LENGTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 MONTHS_LENGTH_LEAP = [31,29,31,30,31,30,31,31,30,31,30,31]
