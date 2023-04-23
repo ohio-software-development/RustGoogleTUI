@@ -15,11 +15,11 @@ mod image_view;
 fn main() {
     
     thread::spawn(|| {
+        // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
         let output = Command::new("python3")
             .arg("gmailLoader.py")
             .output()
             .expect("failed to execute process");
-
         let hello = output.stdout;
     });
     
@@ -27,16 +27,10 @@ fn main() {
 
     siv.set_theme(better_theme());
 
-    // notes:
-    // .child(EditView::new().content("blahblahblah"));
-
-    // img = image_view::ImageView::set_image(&mut img, "IMG_7223[20].png");
     let _login_menu = Dialog::around(styled_editview("", "Login", true))
         .button("Enter", go_back_to_main_dialog)
         .button("Quit", |view| view.quit())
         .title("Login");
-    // image
-    // siv.add_layer(layout);
     siv.add_layer(_login_menu);
 
     siv.set_autohide_menu(false);
@@ -138,26 +132,66 @@ fn send_layer(siv: &mut Cursive) {
     let email_msg = "Type your email here...";
     let recipient = "Type receiver here...";
 
-    let layout = LinearLayout::vertical()
-        .child(TextView::new("Gmail:"))
-        .child(TextView::new("Display:"))
-        .child(EditView::new().content(recipient))
-        .child(EditView::new().content(subject))
-        .child(EditView::new().on_submit(send).content(email_msg));
-    siv.add_layer(layout);
+    // let layout = LinearLayout::vertical()
+    //     .child(TextView::new("Gmail:"))
+    //     .child(TextView::new("Display:"))
+    //     .child(EditView::new().content(recipient))
+    //     .child(EditView::new().content(subject))
+    //     .child(EditView::new().on_submit(send).content(email_msg));
+
+    siv.add_layer(
+        Dialog::new()
+            .title("Enter your name")
+            .padding_lrtb(2, 2, 4, 4)
+            .content(
+                EditView::new().content("To: ")
+                    .with_name("to")
+                    .fixed_width(20),
+            ).padding_bottom(5)
+            .content(
+                EditView::new().content("Subject: ")
+                    .with_name("subject")
+                    .fixed_width(20),
+            )
+            .content(
+                EditView::new().content("Message:")
+                    .with_name("msg_text")
+                    .fixed_width(20),
+            )
+            .button("Ok", |s| {
+                let to = s
+                    .call_on_name("to", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                let subject = s
+                    .call_on_name("subject", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                let msg_text =  s
+                .call_on_name("msg_text", |view: &mut EditView| {
+                    view.get_content()
+                })
+                .unwrap();
+                send(s, &to, &subject, &msg_text);
+            }),
+    );
+
+    //siv.add_layer(layout);
 }
 
 // , recipient: &str, subject: &str, message: &str
-fn send(_: &mut Cursive, message: &str) {
-    // run send email
+fn send(_: &mut Cursive, to: &str, subject: &str, message: &str) {
     let output = Command::new("python3")
         .arg("gmailCleanAPI.py")
-        .arg("bp309420@ohio.edu")
-        .arg("this is from Rust")
-        .arg("helllllo!")
+        .arg(to)
+        .arg(subject)
+        .arg(message)
         .output()
         .expect("failed to execute process");
     let hello = output.stdout;
+    // equivalent to running python3 gmailCleanAPI.py "to" "subject" "message"
 }
 
 fn gmail(siv: &mut Cursive) {
@@ -435,7 +469,3 @@ fn open_slides(_: &mut Cursive) {
         Err(err) => eprintln!("An error occurred when opening '{}': {}", path, err),
     }
 }
-
-// todo: series of functions to display different UI menus for social media interface
-// todo: image renderer?
-// todo: put together presentation and polish idea?? (idk if they using dev post or how we are supposed to submit so idk ab this yet)
