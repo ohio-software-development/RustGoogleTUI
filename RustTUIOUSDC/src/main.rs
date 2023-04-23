@@ -229,9 +229,22 @@ fn go_to_next_email(siv: &mut Cursive, num: &i32) {
     }
 }
 
-fn read_calender_string(siv: &mut Cursive, file: String) -> String {
+fn calendar_error(siv: &mut Cursive) {
 
-    let mut command = Command::new("python3").arg(file).spawn().expect("error");
+    siv.pop_layer();
+
+    let error = Dialog::new()
+    .content(TextView::new("Input Error"))
+    .button("Back", calendar);
+
+    siv.add_layer(error);
+
+
+}
+
+fn read_calender_string(siv: &mut Cursive, arguments: [String; 4]) -> String {
+
+    let mut command = Command::new("python3").args(arguments).spawn().expect("error");
     command.wait().expect("error");
 
 
@@ -260,7 +273,7 @@ fn read_calender_string(siv: &mut Cursive, file: String) -> String {
         // get day
         match bar_index_option {
             Some(x) => bar_index = x,
-            None =>  siv.quit(),
+            None => calendar_error(siv),
         }
 
         let day = &text_left[0..bar_index];
@@ -271,7 +284,7 @@ fn read_calender_string(siv: &mut Cursive, file: String) -> String {
 
         match bar_index_option {
             Some(x) => bar_index = x,
-            None =>  siv.quit(),
+            None => calendar_error(siv),
         }
 
         let title = &text_left[0..bar_index];
@@ -301,7 +314,7 @@ fn calender_weekly(siv: &mut Cursive) {
 
     siv.pop_layer();
 
-    let display_string = read_calender_string(siv, "../calendar_week.py".to_string());
+    let display_string = read_calender_string(siv, ["../calendar_week.py".to_string(), "".to_string(), "".to_string(), "".to_string()]);
 
     let events = Dialog::new()
     .content(TextView::new(display_string))
@@ -316,7 +329,7 @@ fn calender_date(siv: &mut Cursive) {
 
     siv.pop_layer();
 
-    let display_string = read_calender_string(siv, "../calendar_date.py".to_string());
+    let display_string = read_calender_string(siv, ["../calendar_date.py".to_string(), "".to_string(), "".to_string(), "".to_string()]);
 
     let events = Dialog::new()
     .content(TextView::new(display_string))
@@ -327,6 +340,57 @@ fn calender_date(siv: &mut Cursive) {
 
 }
 
+fn calendar_find(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::default().title("dd/mm/yyyy")
+        .padding_lrtb(2, 2, 4, 4)
+        
+        .content(EditView::new().content("").with_name("dd/mm/yyyy").fixed_width(20))
+
+        .button("Back", calendar)
+    
+        .button("Enter", |s| {
+
+
+            let text = s.call_on_name("dd/mm/yyyy", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            if (text.len() == 10) {
+
+                let day = (&text[0..2]).to_string();
+                let month = (&text[3..5]).to_string();
+                let year = (&text[6..10]).to_string();
+                
+                let display_string = read_calender_string(s, ["../calender_find.py".to_string(), year, month, day]);
+            
+                let events = Dialog::new()
+                .content(TextView::new(display_string))
+                .button("Back", calendar);
+                
+                s.pop_layer();
+                s.add_layer(events);
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+    
+    );
+
+
+
+
+}
 
 fn calendar(siv: &mut Cursive) {
 
@@ -336,6 +400,7 @@ fn calendar(siv: &mut Cursive) {
     .content(TextView::new("Options"))
     .button("Weekly", calender_weekly)
     .button("Daily", calender_date)
+    .button("Find", calendar_find)
     .button("Back", go_back_to_main_dialog);
     
     siv.add_layer(options)
