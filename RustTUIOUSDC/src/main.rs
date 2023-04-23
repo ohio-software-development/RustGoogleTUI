@@ -8,18 +8,21 @@ use cursive_extras::*;
 use std::fs;
 use std::process::Command;
 use std::thread;
+use cpython::{Python, PyDict, PyResult};
 
 mod image_view;
 
 fn main() {
+    
     thread::spawn(|| {
-        let output = Command::new("Python3")
+        let output = Command::new("python3")
             .arg("gmailLoader.py")
             .output()
             .expect("failed to execute process");
 
         let hello = output.stdout;
     });
+    
     let mut siv = Cursive::new();
 
     siv.set_theme(better_theme());
@@ -147,7 +150,7 @@ fn send_layer(siv: &mut Cursive) {
 // , recipient: &str, subject: &str, message: &str
 fn send(_: &mut Cursive, message: &str) {
     // run send email
-    let output = Command::new("Python3")
+    let output = Command::new("python3")
         .arg("gmailCleanAPI.py")
         .arg("bp309420@ohio.edu")
         .arg("this is from Rust")
@@ -269,7 +272,7 @@ fn go_to_next_email(siv: &mut Cursive, num: &i32) {
         siv.add_layer(showEmail);
     }
 }
-
+/*
 fn calendar(siv: &mut Cursive) {
     // Reads the information in calander.txt
 
@@ -323,6 +326,62 @@ fn calendar(siv: &mut Cursive) {
         println!("{text_left}");
     }
 }
+*/
+
+fn calendar(siv: &mut Cursive) {
+    siv.pop_layer();
+    
+    
+    let options = Dialog::new()
+        .content(TextView::new("Options"))
+        .button("Weekly", calendar_weekly)
+        .button("Find Date", calendar_finder)
+        .button("Create Event", create_event)
+        .button("Back", go_back_to_main_dialog);
+    
+        
+    siv.add_layer(options);
+    
+
+}
+
+
+
+
+fn calendar_finder(siv: &mut Cursive){//year: int, month: int, day: day){
+    siv.pop_layer();
+    
+    let output = Command::new("python3")
+        .arg("calendar_find.py")
+        .arg("2023")
+        .arg("4")
+        .arg("4")
+        .output()
+        .expect("failed to execute process");
+    
+    
+    let options = Dialog::new()
+    .button("Back",calendar);
+    siv.add_layer(options);
+}
+
+fn calendar_weekly(siv: &mut Cursive){
+    siv.pop_layer();
+    
+    
+    let options = Dialog::new()
+    .button("Back",calendar);
+    siv.add_layer(options);
+}
+
+fn create_event(siv: &mut Cursive){
+    siv.pop_layer();
+    
+    let options = Dialog::new()
+    .button("Back",calendar);
+    siv.add_layer(options);
+}
+
 
 fn save_mail(_: &mut Cursive, x: &str) {
     let data = x;
