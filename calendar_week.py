@@ -61,10 +61,10 @@ def main():
 
 # Displays all events that happened on a day as specified by the user.
 # Uses function inputDate to get date.
-def output_days_events(service, day):
+def output_days_events(service, day_t):
 
     file = open("../calendar.txt", "a")
-
+    day = datetime.datetime(year=day_t.year, day=day_t.day, month=day_t.month, hour=0)
     fromDate = day.isoformat() + 'Z'
     toDate = day.replace(hour = 23, minute = 59, second = 59).isoformat() + 'Z'
         
