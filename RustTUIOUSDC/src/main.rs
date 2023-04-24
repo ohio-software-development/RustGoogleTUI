@@ -8,6 +8,7 @@ use cursive_extras::*;
 use std::fs;
 use std::process::Command;
 use std::thread;
+use std::rc::Rc;
 
 mod image_view;
 
@@ -122,60 +123,94 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     siv.add_layer(content);
 }
 
-fn send_layer(siv: &mut Cursive) {
+fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
+{
+
+    let output = format!("To: {}\nSubject: {}", to, subject);
     siv.pop_layer();
 
-    let subject = "Type subject here...";
-    let email_msg = "Type your email here...";
-    let recipient = "Type receiver here...";
+    let to_copy = Rc::new(to.to_owned());
 
-    // let layout = LinearLayout::vertical()
-    //     .child(TextView::new("Gmail:"))
-    //     .child(TextView::new("Display:"))
-    //     .child(EditView::new().content(recipient))
-    //     .child(EditView::new().content(subject))
-    //     .child(EditView::new().on_submit(send).content(email_msg));
+    let to_copy_clone = Rc::clone(&to_copy);
 
+    let sub_copy = Rc::new(subject.to_owned());
+
+    let sub_copy_clone = Rc::clone(&sub_copy);
     siv.add_layer(
         Dialog::new()
-            .title("Enter your name")
-            .padding_lrtb(2, 2, 4, 4)
+            .title("SEND")
             .content(
-                EditView::new().content("To: ")
-                    .with_name("to")
-                    .fixed_width(20),
-            ).padding_bottom(5)
-            .content(
-                EditView::new().content("Subject: ")
-                    .with_name("subject")
+                EditView::new()
+                    .on_submit(move |siv, message| {
+                        send(siv, &to_copy_clone, &sub_copy_clone, message);
+                        siv.pop_layer();
+                    })
+                    .with_name("message")
                     .fixed_width(20),
             )
-            .content(
-                EditView::new().content("Message:")
-                    .with_name("msg_text")
-                    .fixed_width(20),
-            )
-            .button("Ok", |s| {
-                let to = s
-                    .call_on_name("to", |view: &mut EditView| {
+            .button("Next", move |siv| {
+                let message = siv
+                    .call_on_name("message", |view: &mut EditView| {
                         view.get_content()
                     })
                     .unwrap();
-                let subject = s
+                send(siv, &to_copy, &sub_copy, &message);
+                siv.pop_layer();
+            }),
+    );
+}
+
+fn sub_layer(siv: &mut Cursive, to: &str) {
+    siv.pop_layer();
+
+    let to_copy = Rc::new(to.to_owned());
+
+    let to_copy_clone = Rc::clone(&to_copy);
+    siv.add_layer(
+        Dialog::new()
+            .title("Test")
+            .content(
+                EditView::new()
+                    .on_submit(move |siv, subject| {
+                        mess_layer(siv, &to_copy_clone, subject);
+                    })
+                    .with_name("subject")
+                    .fixed_width(20),
+            )
+            .button("Next", move |siv| {
+                let subject = siv
                     .call_on_name("subject", |view: &mut EditView| {
                         view.get_content()
                     })
                     .unwrap();
-                let msg_text =  s
-                .call_on_name("msg_text", |view: &mut EditView| {
-                    view.get_content()
-                })
-                .unwrap();
-                send(s, &to, &subject, &msg_text);
+                mess_layer(siv, &to_copy, &subject)
+            }),
+    );
+}
+
+fn send_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+    
+    siv.add_layer(
+        Dialog::new()
+            .title("Enter recipient's email")
+            .content(
+                EditView::new()
+                    .on_submit(sub_layer)
+                    .with_name("to")
+                    .fixed_width(20),
+            )
+            .button("Next", |siv| {
+                let to = siv
+                    .call_on_name("to", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                sub_layer(siv, &to);
             }),
     );
 
-    //siv.add_layer(layout);
+
 }
 
 // , recipient: &str, subject: &str, message: &str
