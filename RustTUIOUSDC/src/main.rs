@@ -1,34 +1,42 @@
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
-use cursive::views::{Dialog, EditView, LinearLayout, TextView, Button, OnEventView, SelectView};
-use cursive::{event, menu, Cursive, CursiveExt, View};
-use cursive::event::EventResult;
-use cursive::align::HAlign;
 use cursive::traits::*;
+use cursive::views::{Button, Dialog, EditView, LinearLayout, OnEventView, SelectView, TextView};
+use cursive::{event, menu, Cursive, CursiveExt, View};
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
-mod image_view;
+use std::thread;
 
-use std::fs::File;
-use std::io::prelude::*;
+mod image_view;
 
 fn main() {
     let mut siv = Cursive::new();
 
     siv.set_theme(better_theme());
-
-    // notes:
-    // .child(EditView::new().content("blahblahblah"));
-
-    // img = image_view::ImageView::set_image(&mut img, "IMG_7223[20].png");
-    let _login_menu = Dialog::around(styled_editview("", "Login", true))
-        .button("Enter", go_back_to_main_dialog)
-        .button("Quit", |view| view.quit())
-        .title("Login");
-    // image
-    // siv.add_layer(layout);
-    siv.add_layer(_login_menu);
-
+    
+    let mut _title_menu = Dialog::text("Error Screen");
+        
+    
+    let token_found = std::path::Path::new("token.json").exists();
+    if token_found{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!\nLogin in the Web Browser Before Proceeding.")
+            .button("Enter", find_token);
+    }
+    siv.add_layer(_title_menu);
+    
+    thread::spawn(|| {
+        // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
+        let output = Command::new("python3")
+            .arg("gmailLoader.py")
+            .output()
+            .expect("failed to execute process");
+        let hello = output.stdout;
+    });
+    
     siv.set_autohide_menu(false);
     siv.add_global_callback(event::Key::Esc, |s| s.select_menubar());
     siv.add_global_callback('q', |s| s.quit());
@@ -36,9 +44,32 @@ fn main() {
     siv.run();
 }
 
+fn find_token(siv: &mut Cursive){
+    siv.pop_layer();
+    let token_found = std::path::Path::new("token.json").exists();
+    let mut login_check = Dialog::text("Error Screen");
+    if token_found{
+        login_check = Dialog::text("Successfully Logged In.")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        login_check = Dialog::text("Invalid Attempt. Please go to Google Login Webpage")
+            .button("Go Back",find_token);
+            
+        thread::spawn(|| {
+            let output = Command::new("python3")
+                .arg("login_system.py")
+                .output()
+                .expect("failed to execute process");
+        });
+    }
+    siv.add_layer(login_check);
+}
+
+
 fn go_back_to_main_dialog(siv: &mut Cursive) {
     let mut img = image_view::ImageView::new(40, 14);
-    img.set_image("./images/download.jpeg");
+    img.set_image("../images/download.jpeg");
     let image_viewer = Dialog::around(img);
 
     let current_val =
@@ -79,7 +110,12 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
                 .leaf("Sheets", open_sheets),
         )
         .add_subtree("Team", friends_tree)
-        .add_leaf("Gmail", gmail)
+        .add_subtree(
+            "Gmail",
+            menu::Tree::new()
+                .leaf("Read", gmail)
+                .leaf("Send", send_layer),
+        )
         .add_leaf("Calendar", calendar)
         .add_leaf("Logout", |s| s.quit());
 
@@ -114,6 +150,75 @@ fn swap_data(siv: &mut Cursive, name: &str) {
 
     // image
     siv.add_layer(content);
+}
+
+fn send_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+
+    let subject = "Type subject here...";
+    let email_msg = "Type your email here...";
+    let recipient = "Type receiver here...";
+
+    // let layout = LinearLayout::vertical()
+    //     .child(TextView::new("Gmail:"))
+    //     .child(TextView::new("Display:"))
+    //     .child(EditView::new().content(recipient))
+    //     .child(EditView::new().content(subject))
+    //     .child(EditView::new().on_submit(send).content(email_msg));
+
+    siv.add_layer(
+        Dialog::new()
+            .title("Enter your name")
+            .padding_lrtb(2, 2, 4, 4)
+            .content(
+                EditView::new().content("To: ")
+                    .with_name("to")
+                    .fixed_width(20),
+            ).padding_bottom(5)
+            .content(
+                EditView::new().content("Subject: ")
+                    .with_name("subject")
+                    .fixed_width(20),
+            )
+            .content(
+                EditView::new().content("Message:")
+                    .with_name("msg_text")
+                    .fixed_width(20),
+            )
+            .button("Ok", |s| {
+                let to = s
+                    .call_on_name("to", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                let subject = s
+                    .call_on_name("subject", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                let msg_text =  s
+                .call_on_name("msg_text", |view: &mut EditView| {
+                    view.get_content()
+                })
+                .unwrap();
+                send(s, &to, &subject, &msg_text);
+            }),
+    );
+
+    //siv.add_layer(layout);
+}
+
+// , recipient: &str, subject: &str, message: &str
+fn send(_: &mut Cursive, to: &str, subject: &str, message: &str) {
+    let output = Command::new("python3")
+        .arg("gmailCleanAPI.py")
+        .arg(to)
+        .arg(subject)
+        .arg(message)
+        .output()
+        .expect("failed to execute process");
+    let hello = output.stdout;
+    // equivalent to running python3 gmailCleanAPI.py "to" "subject" "message"
 }
 
 fn gmail(siv: &mut Cursive) {
@@ -289,21 +394,24 @@ fn read_calender_string(siv: &mut Cursive, arguments: [String; 12]) -> String {
 
         let title = &text_left[0..bar_index];
 
-        if (bar_index + 2 < text_left.len()) {
-
-            text_left = &text_left[bar_index+2..];
-        
-        } else {
-
-            going = false;
-
+        // get start
+        text_left = &text_left[bar_index + 1..text_left.len()];
+        bar_index_option = text_left.find("|");
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None => siv.quit(),
         }
 
-        display_string = [display_string.to_string(), day.to_string(), title.to_string(), "\n".to_string()].join(" ");
+        let start = &text_left[0..bar_index];
 
-        file.write_all(title.as_bytes()).expect("error");
-        file.write_all(b"\n").expect("error");
+        // check if more events exit
+        if bar_index + 1 >= text_left.len() {
+            going = false;
+        } else {
+            text_left = &text_left[bar_index + 2..text_left.len()];
+        }
 
+        println!("{text_left}");
     }
 
     return display_string;
@@ -553,7 +661,6 @@ fn calendar_add(siv: &mut Cursive) {
 }
 
 fn calendar(siv: &mut Cursive) {
-
     siv.pop_layer();
 
     let options = Dialog::new()
@@ -563,8 +670,9 @@ fn calendar(siv: &mut Cursive) {
     .button("Find", calendar_find)
     .button("add", calendar_add)
     .button("Back", go_back_to_main_dialog);
+        
+    siv.add_layer(options);
     
-    siv.add_layer(options)
 
 }
 
@@ -617,7 +725,3 @@ fn open_slides(_: &mut Cursive) {
         Err(err) => eprintln!("An error occurred when opening '{}': {}", path, err),
     }
 }
-
-// todo: series of functions to display different UI menus for social media interface
-// todo: image renderer?
-// todo: put together presentation and polish idea?? (idk if they using dev post or how we are supposed to submit so idk ab this yet)

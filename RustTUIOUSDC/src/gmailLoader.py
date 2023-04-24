@@ -15,7 +15,7 @@ import sys
 
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 
 def credentials():
     creds = None
@@ -97,6 +97,10 @@ creds = credentials()
 lst = getMessages(creds).execute()
 x = 0
 numMail = 20
+
+# option to load more mail
+if len(sys.argv) > 1:
+    numMail = sys.argv[1]
 
 f = open("./description.txt", 'w')
 

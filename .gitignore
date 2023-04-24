@@ -7,6 +7,6 @@ target
 
 client
 
-gmailCleanAPI.py
+.DS_Store
 
 test.py

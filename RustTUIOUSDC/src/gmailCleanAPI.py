@@ -15,7 +15,7 @@ import sys
 
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 
 def credentials():
     creds = None
@@ -196,7 +196,7 @@ def custom_send_message(message):
 # to = input("Who would you like to send a message to?")
 # subject = input("Whats the subject?")
 # msg_txt = input("What would you like to send?")
-sender = "bradydummy@gmail.com"
+sender = ""
 to = "bp309420@ohio.edu"
 subject = "testest2"
 
