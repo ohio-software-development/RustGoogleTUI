@@ -6,7 +6,6 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-cpython = "0.7"
 cursive = "0.20"
 cursive-extras = "0.9.3"
 cursive_core = "0.3.7"

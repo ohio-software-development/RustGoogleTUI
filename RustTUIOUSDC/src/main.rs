@@ -8,9 +8,6 @@ use cursive_extras::*;
 use std::fs;
 use std::process::Command;
 use std::thread;
-use cpython::{Python, PyDict, PyResult};
-use std::time::Duration;
-use std::thread::sleep;
 
 mod image_view;
 
