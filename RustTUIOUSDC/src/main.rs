@@ -9,10 +9,30 @@ use std::fs;
 use std::process::Command;
 use std::thread;
 use cpython::{Python, PyDict, PyResult};
+use std::time::Duration;
+use std::thread::sleep;
 
 mod image_view;
 
 fn main() {
+    
+    let mut siv = Cursive::new();
+
+    siv.set_theme(better_theme());
+    
+    let mut _title_menu = Dialog::text("Error Screen");
+        
+    
+    let token_found = std::path::Path::new("token.json").exists();
+    if token_found{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!\nLogin in the Web Browser Before Proceeding.")
+            .button("Enter", find_token);
+    }
+    siv.add_layer(_title_menu);
     
     thread::spawn(|| {
         // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
@@ -23,16 +43,6 @@ fn main() {
         let hello = output.stdout;
     });
     
-    let mut siv = Cursive::new();
-
-    siv.set_theme(better_theme());
-
-    let _login_menu = Dialog::around(styled_editview("", "Login", true))
-        .button("Enter", go_back_to_main_dialog)
-        .button("Quit", |view| view.quit())
-        .title("Login");
-    siv.add_layer(_login_menu);
-
     siv.set_autohide_menu(false);
     siv.add_global_callback(event::Key::Esc, |s| s.select_menubar());
     siv.add_global_callback('q', |s| s.quit());
@@ -40,9 +50,32 @@ fn main() {
     siv.run();
 }
 
+fn find_token(siv: &mut Cursive){
+    siv.pop_layer();
+    let token_found = std::path::Path::new("token.json").exists();
+    let mut login_check = Dialog::text("Error Screen");
+    if token_found{
+        login_check = Dialog::text("Successfully Logged In.")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        login_check = Dialog::text("Invalid Attempt. Please go to Google Login Webpage")
+            .button("Go Back",find_token);
+            
+        thread::spawn(|| {
+            let output = Command::new("python3")
+                .arg("login_system.py")
+                .output()
+                .expect("failed to execute process");
+        });
+    }
+    siv.add_layer(login_check);
+}
+
+
 fn go_back_to_main_dialog(siv: &mut Cursive) {
     let mut img = image_view::ImageView::new(40, 14);
-    img.set_image("./images/download.jpeg");
+    img.set_image("../images/download.jpeg");
     let image_viewer = Dialog::around(img);
 
     let current_val =
