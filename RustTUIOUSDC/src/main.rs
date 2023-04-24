@@ -242,7 +242,7 @@ fn calendar_error(siv: &mut Cursive) {
 
 }
 
-fn read_calender_string(siv: &mut Cursive, arguments: [String; 4]) -> String {
+fn read_calender_string(siv: &mut Cursive, arguments: [String; 12]) -> String {
 
     let mut command = Command::new("python3").args(arguments).spawn().expect("error");
     command.wait().expect("error");
@@ -314,7 +314,8 @@ fn calender_weekly(siv: &mut Cursive) {
 
     siv.pop_layer();
 
-    let display_string = read_calender_string(siv, ["../calendar_week.py".to_string(), "".to_string(), "".to_string(), "".to_string()]);
+    let arguments = ["../calendar_week.py".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string()];
+    let display_string = read_calender_string(siv, arguments);
 
     let events = Dialog::new()
     .content(TextView::new(display_string))
@@ -329,13 +330,33 @@ fn calender_date(siv: &mut Cursive) {
 
     siv.pop_layer();
 
-    let display_string = read_calender_string(siv, ["../calendar_date.py".to_string(), "".to_string(), "".to_string(), "".to_string()]);
+    let arguments = ["../calendar_date.py".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string()];
+    let display_string = read_calender_string(siv, arguments);
 
     let events = Dialog::new()
     .content(TextView::new(display_string))
     .button("Back", calendar);
     
     siv.add_layer(events);
+
+
+}
+
+fn separate_date(text: String) -> [String; 3] {
+
+    if (text.len() == 10) {
+
+        let day = (&text[0..2]).to_string();
+        let month = (&text[3..5]).to_string();
+        let year = (&text[6..10]).to_string();
+        
+        return [day, month, year];
+
+    } else {
+
+        return ["".to_string(), "".to_string(), "".to_string()];
+
+    }
 
 
 }
@@ -362,13 +383,16 @@ fn calendar_find(siv: &mut Cursive) {
 
             }).unwrap().to_string();
 
-            if (text.len() == 10) {
+            let date = separate_date(text);
 
-                let day = (&text[0..2]).to_string();
-                let month = (&text[3..5]).to_string();
-                let year = (&text[6..10]).to_string();
+            if (date[0] != "".to_string()) {
+
+                let day = (&date[0]).to_string();
+                let month = (&date[1]).to_string();
+                let year = (&date[2]).to_string();
                 
-                let display_string = read_calender_string(s, ["../calender_find.py".to_string(), year, month, day]);
+                let arguments = ["../calender_find.py".to_string(), year, month, day, "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(),"".to_string()];
+                let display_string = read_calender_string(s, arguments);
             
                 let events = Dialog::new()
                 .content(TextView::new(display_string))
@@ -387,8 +411,144 @@ fn calendar_find(siv: &mut Cursive) {
     
     );
 
+}
+
+fn calendar_name(siv: &mut Cursive) -> () {
+
+    siv.pop_layer();
+
+    let mut result = "".to_string();
+    siv.add_layer(
+
+        Dialog::new().title("Name")
+        .content(EditView::new().content("").with_name("name").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", |s| {
+
+            let mut text = s.call_on_name("name", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            start_date(s, text);
+
+        })
+
+    );
 
 
+}
+
+fn start_date(siv: &mut Cursive, name: String) -> () {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("Start dd/mm/yyyy")
+        .content(EditView::new().content("").with_name("start").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("start", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            let date = separate_date(text);
+            let next = [(&date[0]).to_string(), (&date[1]).to_string(), (&date[2]).to_string(), (&name).to_string()];
+
+            if (date[0] != "") {
+
+                calendar_start_time(s, next)
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+
+}
+
+fn calendar_start_time(siv: &mut Cursive, prior: [String; 4]) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("Start hh/mm")
+        .content(EditView::new().content("").with_name("start").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("start", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            if (text.len() == 5) {
+
+                let next = [(&prior[0]).to_string(), (&prior[1]).to_string(), (&prior[2]).to_string(), (&prior[3]).to_string(), (&text[0..2]).to_string(), (&text[3..5]).to_string()];
+                calendar_end_time(s, next)
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+}
+
+fn calendar_end_time(siv: &mut Cursive, prior: [String; 6]) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("End hh/mm")
+        .content(EditView::new().content("").with_name("end").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("end", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            if (text.len() == 5) {
+
+                let format = ["../calendar_add_event.py".to_string(),(&prior[2]).to_string(), (&prior[1]).to_string(), (&prior[3]).to_string(), (&prior[4]).to_string(), (&prior[5]).to_string(), (&prior[2]).to_string(), (&prior[1]).to_string(), (&prior[3]).to_string(), (&text[0..2]).to_string(), (&text[3..5]).to_string(), (&prior[0]).to_string(), "".to_string()];
+                let mut command = Command::new("python3").args(format).spawn().expect("error");
+                calendar(s);
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+
+}
+
+fn calendar_add(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    calendar_name(siv);
 
 }
 
@@ -401,6 +561,7 @@ fn calendar(siv: &mut Cursive) {
     .button("Weekly", calender_weekly)
     .button("Daily", calender_date)
     .button("Find", calendar_find)
+    .button("add", calendar_add)
     .button("Back", go_back_to_main_dialog);
     
     siv.add_layer(options)
