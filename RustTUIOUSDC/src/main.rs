@@ -24,18 +24,48 @@ fn main() {
     let mut siv = Cursive::new();
 
     siv.set_theme(better_theme());
-
-    let _login_menu = Dialog::around(styled_editview("", "Login", true))
-        .button("Enter", go_back_to_main_dialog)
-        .button("Quit", |view| view.quit())
-        .title("Login");
-    siv.add_layer(_login_menu);
-
+    
+    let mut _title_menu = Dialog::text("Error Screen");
+        
+    
+    let token_found = std::path::Path::new("token.json").exists();
+    if token_found{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        _title_menu = Dialog::text("Welcome to the Google TUI Project!\nLogin in the Web Browser Before Proceeding.")
+            .button("Enter", find_token);
+    }
+    siv.add_layer(_title_menu);
+    
     siv.set_autohide_menu(false);
     siv.add_global_callback(event::Key::Esc, |s| s.select_menubar());
     siv.add_global_callback('q', |s| s.quit());
 
     siv.run();
+}
+
+fn find_token(siv: &mut Cursive){
+    siv.pop_layer();
+    let token_found = std::path::Path::new("token.json").exists();
+    let mut login_check = Dialog::text("Error Screen");
+    if token_found{
+        login_check = Dialog::text("Successfully Logged In.")
+            .button("Enter", go_back_to_main_dialog);
+    }
+    else{
+        login_check = Dialog::text("Invalid Attempt. Please go to Google Login Webpage")
+            .button("Go Back",find_token);
+            
+        thread::spawn(|| {
+            let output = Command::new("python3")
+                .arg("login_system.py")
+                .output()
+                .expect("failed to execute process");
+        });
+    }
+    siv.add_layer(login_check);
 }
 
 fn go_back_to_main_dialog(siv: &mut Cursive) {
@@ -339,58 +369,475 @@ fn go_to_next_email(siv: &mut Cursive, num: &i32) {
     }
 }
 
-fn calendar(siv: &mut Cursive) {
-    // Reads the information in calander.txt
+fn calendar_error(siv: &mut Cursive) {
 
-    let file_text = fs::read_to_string("calendar.txt").expect("calendar.txt not read");
+    siv.pop_layer();
 
-    // Text that is left to be searched
+    let error = Dialog::new()
+    .content(TextView::new("Input Error"))
+    .button("Back", calendar);
+
+    siv.add_layer(error);
+
+
+}
+
+fn read_calendar_string(siv: &mut Cursive, arguments: [String; 12]) -> String {
+
+    let mut command = Command::new("python3").args(arguments).spawn().expect("error");
+    command.wait().expect("error");
+
+
+    let mut file = std::fs::File::create("file.txt").expect("error");
+
+    let mut display_string = "".to_string();
+
+    // Reads the information in calendar.txt
+
+    let file_text = fs::read_to_string("calendar.txt")
+        .expect("calendar.txt not read");
+
+    
+    // Text that is left to be searched 
     let mut text_left = &file_text[0..file_text.len()];
 
-    // text that is left
-    let mut bar_index_option = text_left.find("|");
+    // text that is left 
+    let mut bar_index_option = None;
     let mut bar_index = 1;
 
-    let mut going = true;
+    let mut going = true; 
     while (going) {
+
+        bar_index_option = text_left.find("|");
+
         // get day
         match bar_index_option {
             Some(x) => bar_index = x,
-            None => siv.quit(),
+            None => calendar_error(siv),
         }
 
         let day = &text_left[0..bar_index];
 
-        // get title
-        text_left = &text_left[bar_index + 1..text_left.len()];
+        text_left = &text_left[bar_index+1..];
+
         bar_index_option = text_left.find("|");
 
         match bar_index_option {
             Some(x) => bar_index = x,
-            None => siv.quit(),
+            None => calendar_error(siv),
         }
 
         let title = &text_left[0..bar_index];
 
-        // get start
-        text_left = &text_left[bar_index + 1..text_left.len()];
+        if (bar_index + 2 < text_left.len()) {
+
+            text_left = &text_left[bar_index+2..];
+        
+        } else {
+
+            going = false;
+
+        }
+
+        display_string = [display_string.to_string(), day.to_string(), title.to_string(), "\n".to_string()].join(" ");
+
+        file.write_all(title.as_bytes()).expect("error");
+        file.write_all(b"\n").expect("error");
+
+    }
+
+    return display_string;
+
+}
+
+fn calendar_weekly(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    let arguments = ["calendar_week.py".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string()];
+    let display_string = read_calendar_string(siv, arguments);
+
+    let events = Dialog::new()
+    .content(TextView::new(display_string))
+    .button("Back", calendar);
+    
+    siv.add_layer(events);
+
+}
+
+
+fn calendar_date(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    let arguments = ["calendar_date.py".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string(), "".to_string()];
+    let display_string = read_calendar_string(siv, arguments);
+
+    let events = Dialog::new()
+    .content(TextView::new(display_string))
+    .button("Back", calendar);
+    
+    siv.add_layer(events);
+
+
+}
+
+fn separate_date(text: String) -> [String; 3] {
+
+    if (text.len() == 10) {
+
+        let year = (&text[0..4]).to_string();
+        let month = (&text[5..7]).to_string();
+        let day = (&text[8..10]).to_string();
+        
+        return [year, month, day];
+
+    } else {
+
+        return ["".to_string(), "".to_string(), "".to_string()];
+
+    }
+
+
+}
+
+fn calendar_find(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::default().title("yyyy/mm/dd")
+        .padding_lrtb(2, 2, 4, 4)
+        
+        .content(EditView::new().content("").with_name("yyyy/mm/dd").fixed_width(20))
+
+        .button("Back", calendar)
+    
+        .button("Enter", |s| {
+
+
+            let text = s.call_on_name("yyyy/mm/dd", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            let date = separate_date(text);
+
+            if (date[0] != "".to_string()) {
+
+                let year = (&date[0]).to_string();
+                let month = (&date[1]).to_string();
+                let day = (&date[2]).to_string();
+                
+                let arguments = ["calendar_find.py".to_string(), year, month, day];
+                let display_string = read_calendar_find(s, arguments);
+            
+                let events = Dialog::new()
+                .content(TextView::new(display_string))
+                .button("Back", calendar);
+                
+                s.pop_layer();
+                s.add_layer(events);
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+    
+    );
+
+}
+
+fn read_calendar_find(siv: &mut Cursive, arguments: [String; 4]) -> String {
+    
+    let mut command = Command::new("python3").args(arguments).spawn().expect("error");
+    command.wait().expect("error");
+
+
+    let mut file = std::fs::File::create("file.txt").expect("error");
+
+    let mut display_string = "".to_string();
+
+    // Reads the information in calendar.txt
+
+    let file_text = fs::read_to_string("calendar.txt")
+        .expect("calendar.txt not read");
+
+    
+    // Text that is left to be searched 
+    let mut text_left = &file_text[0..file_text.len()];
+
+    // text that is left 
+    let mut bar_index_option = None;
+    let mut bar_index = 1;
+
+    let mut going = true; 
+    while (going) {
+
         bar_index_option = text_left.find("|");
+
+        // get day
         match bar_index_option {
             Some(x) => bar_index = x,
-            None => siv.quit(),
+            None => calendar_error(siv),
         }
 
-        let start = &text_left[0..bar_index];
+        let day = &text_left[0..bar_index];
 
-        // check if more events exit
-        if bar_index + 1 >= text_left.len() {
-            going = false;
+        text_left = &text_left[bar_index+1..];
+
+        bar_index_option = text_left.find("|");
+
+        match bar_index_option {
+            Some(x) => bar_index = x,
+            None => calendar_error(siv),
+        }
+
+        let title = &text_left[0..bar_index];
+
+        if (bar_index + 2 < text_left.len()) {
+
+            text_left = &text_left[bar_index+2..];
+        
         } else {
-            text_left = &text_left[bar_index + 2..text_left.len()];
+
+            going = false;
+
         }
 
-        println!("{text_left}");
+        display_string = [display_string.to_string(), day.to_string(), title.to_string(), "\n".to_string()].join(" ");
+
+        file.write_all(title.as_bytes()).expect("error");
+        file.write_all(b"\n").expect("error");
+
     }
+
+    return display_string;
+    
+}
+
+fn calendar_name(siv: &mut Cursive) -> () {
+
+    siv.pop_layer();
+
+    let mut result = "".to_string();
+    siv.add_layer(
+
+        Dialog::new().title("Name")
+        .content(EditView::new().content("").with_name("name").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", |s| {
+
+            let mut text = s.call_on_name("name", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            start_date(s, text);
+
+        })
+
+    );
+
+
+}
+
+fn start_date(siv: &mut Cursive, name: String) -> () {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("Start yyyy/mm/dd")
+        .content(EditView::new().content("").with_name("start").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("start", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            let date = separate_date(text);
+            let next = [(&name).to_string(), (&date[0]).to_string(), (&date[1]).to_string(), (&date[2]).to_string()];
+
+            if (date[0] != "") {
+
+                calendar_end_date(s, next)
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+
+}
+
+fn calendar_end_date(siv: &mut Cursive, prior:[String; 4]){
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("End yyyy/mm/dd (Enter Q if Same Date)")
+        .content(EditView::new().content("").with_name("start").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("start", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+            
+            if (text == "Q" || text == "q"){
+                let next = [(&prior[0]).to_string(), (&prior[1]).to_string(), (&prior[2]).to_string(), (&prior[3]).to_string(), 
+                    (&prior[1]).to_string(), (&prior[2]).to_string(), (&prior[3]).to_string()];
+                calendar_start_time(s, next);
+            }
+            
+            else if (text.len() == 10) {
+                let date = separate_date(text);
+                let next = [(&prior[0]).to_string(), (&prior[1]).to_string(), (&prior[2]).to_string(), (&prior[3]).to_string(), 
+                    (&date[0]).to_string(), (&date[1]).to_string(), (&date[2]).to_string()];
+                calendar_start_time(s, next);
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+    
+}
+
+fn calendar_start_time(siv: &mut Cursive, prior: [String; 7]) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("Start hh:mm")
+        .content(EditView::new().content("").with_name("start").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("start", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            if (text.len() == 5) {
+                let time = separate_time(text);
+                let next = [(&prior[0]).to_string(), (&prior[1]).to_string(), (&prior[2]).to_string(), (&prior[3]).to_string(), 
+                (&prior[4]).to_string(), (&prior[5]).to_string(), (&prior[6]).to_string(), (&time[0]).to_string(), (&time[1]).to_string()];
+                calendar_end_time(s, next)
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+}
+
+
+
+fn calendar_end_time(siv: &mut Cursive, prior: [String; 9]) {
+
+    siv.pop_layer();
+
+    siv.add_layer(
+
+        Dialog::new().title("End hh:mm")
+        .content(EditView::new().content("").with_name("end").fixed_width(20))
+        .button("Cancel", calendar)
+        .button("Next", move |s| {
+
+            let mut text = s.call_on_name("end", |view: &mut EditView| {
+
+                view.get_content()
+
+            }).unwrap().to_string();
+
+            if (text.len() == 5) {
+                let time = separate_time(text);
+                let format = [(&prior[1]).to_string(), (&prior[2]).to_string(), 
+                (&prior[3]).to_string(), (&prior[4]).to_string(), (&prior[5]).to_string(), (&prior[6]).to_string(), 
+                (&prior[7]).to_string(), (&prior[8]).to_string(), (&time[0]).to_string(), (&time[1]).to_string(), 
+                (&prior[0]).to_string(), "".to_string()];
+                let mut command = Command::new("python3").arg("calendar_add_event.py").args(format).spawn().expect("error");
+                calendar(s);
+
+            } else {
+
+                calendar_error(s);
+
+            }
+
+        })
+
+    );
+
+}
+
+fn separate_time(text: String) -> [String; 2] {
+
+    if (text.len() == 5) {
+
+        let hour = (&text[0..2]).to_string();
+        let minute = (&text[3..5]).to_string();
+        
+        return [hour, minute];
+
+    } else {
+
+        return ["".to_string(), "".to_string()];
+
+    }
+
+
+}
+
+fn calendar_add(siv: &mut Cursive) {
+
+    siv.pop_layer();
+
+    calendar_name(siv);
+
+}
+
+fn calendar(siv: &mut Cursive) {
+    siv.pop_layer();
+
+    let options = Dialog::new()
+    .content(TextView::new("Options"))
+    .button("Weekly", calendar_weekly)
+    .button("Daily", calendar_date)
+    .button("Find", calendar_find)
+    .button("Add", calendar_add)
+    .button("Back", go_back_to_main_dialog);
+        
+    siv.add_layer(options);
+    
+
 }
 
 fn save_mail(_: &mut Cursive, x: &str) {

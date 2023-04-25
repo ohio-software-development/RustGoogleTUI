@@ -12,7 +12,6 @@ from email.message import EmailMessage
 import email
 import sys
 
-
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 
@@ -79,6 +78,7 @@ def get_mime_message(service, msg_id):
   except Exception as error:
     print('An error occurred: %s' % error)
 
+
 def getSnippet(service, msg_id):
     try:
         message = service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
@@ -92,6 +92,7 @@ creds = credentials()
 
 lst = getMessages(creds).execute()
 x = 0
+
 numMail = 10
 
 # option to load more mail

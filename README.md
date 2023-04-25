@@ -1,15 +1,28 @@
-# RustBlackBoardTUI
-Rust TUI for Software Tools project utilizing the Blackboard API for CS3560 section 100.
+
+
+Rust TUI for Software Tools project utilizing the Google API for CS3560 section 100.
+
+# RustBlackBoardTUI Dev Branch
+
+This is the Developer Branch which will be used to test new features and which through pull requests, will be merged with the main branch after successful testing.
+
+------------------------
+Rust TUI for Software Tools project utilizing the Google API for CS3560 section 100.
+
 
 ### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
 
 ### Project Discription 
-This will be a Text User Interface (TUI) for Blackboard. The user will be able to log in, check assigments, and check their grades. 
-Idealy, it would also be possible for the user to interact with an outside calander.  
+
+
+This will be a Text User Interface (TUI) for Google. The user will be able to log in, check the Gmail inbox, and look at emails.
+Idealy, it would also be possible for the user to interact with the calander.  
+
+
 
 ### Technology Used
-Rust and the blackboard API will be used to create the project.
+Rust and the Google API will be used to create the project.
 
 ### Deployment
 Move into "RustBlackBoardTUI/RustTUIOUSDC"

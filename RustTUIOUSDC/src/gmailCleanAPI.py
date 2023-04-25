@@ -14,7 +14,7 @@ import sys
 
 
 # If modifying these scopes, delete the file token.json.
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 
 def credentials():
     creds = None
@@ -79,7 +79,6 @@ def get_mime_message(service, msg_id):
   except Exception as error:
     print('An error occurred: %s' % error)
 
-
 def getSnippet(service, msg_id):
     try:
         message = service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
@@ -87,7 +86,7 @@ def getSnippet(service, msg_id):
         return message['snippet']
     except Exception as error:
         print('An error occurred: %s' % error)
-
+        
 def create_message(sender, to, subject, message_text):
     message = EmailMessage()
 
@@ -134,7 +133,6 @@ def gmail_send_message():
         print(F'An error occurred: {error}')
         send_message = None
     return send_message
-
 
 def custom_send_message(message):
 

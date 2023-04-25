@@ -1,1 +1,12 @@
 target
+*.json
+
+/Old
+
+*.txt
+
+client
+
+.DS_Store
+
+test.py
