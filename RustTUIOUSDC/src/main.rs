@@ -10,6 +10,8 @@ use std::process::Command;
 use std::thread;
 use std::rc::Rc;
 
+use std::fs::File;
+use std::io::prelude::*;
 mod image_view;
 
 fn main() {
@@ -70,7 +72,7 @@ fn find_token(siv: &mut Cursive){
 
 fn go_back_to_main_dialog(siv: &mut Cursive) {
     let mut img = image_view::ImageView::new(40, 14);
-    img.set_image("./images/download.jpeg");
+    img.set_image("../images/download.jpeg");
     let image_viewer = Dialog::around(img);
 
     let current_val =
@@ -133,7 +135,7 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     let bio = fs::read_to_string(file_path).expect("Should have been able to read the file");
 
     let mut img = image_view::ImageView::new(40, 14);
-    let image_path = String::from("./images/") + name + ".jpeg";
+    let image_path = String::from("../images/") + name + ".jpeg";
     img.set_image(&image_path);
     let image_viewer = Dialog::around(img);
 
@@ -178,7 +180,7 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
                     .with_name("message")
                     .fixed_width(20),
             )
-            .button("Next", move |siv| {
+            .button("Send Message", move |siv| {
                 let message = siv
                     .call_on_name("message", |view: &mut EditView| {
                         view.get_content()
@@ -186,8 +188,12 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
                     .unwrap();
                 send(siv, &to_copy, &sub_copy, &message);
                 siv.pop_layer();
+                siv.add_layer(Dialog::new()
+                    .title("Successfully Sent Email")
+                    .button("Back to Main Menu", go_back_to_main_dialog));
             }),
     );
+   
 }
 
 fn sub_layer(siv: &mut Cursive, to: &str) {
@@ -198,7 +204,7 @@ fn sub_layer(siv: &mut Cursive, to: &str) {
     let to_copy_clone = Rc::clone(&to_copy);
     siv.add_layer(
         Dialog::new()
-            .title("Test")
+            .title("Subject")
             .content(
                 EditView::new()
                     .on_submit(move |siv, subject| {
@@ -252,7 +258,6 @@ fn send(_: &mut Cursive, to: &str, subject: &str, message: &str) {
         .arg(message)
         .output()
         .expect("failed to execute process");
-    let hello = output.stdout;
     // equivalent to running python3 gmailCleanAPI.py "to" "subject" "message"
 }
 

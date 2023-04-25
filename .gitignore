@@ -1,12 +1,11 @@
 target
-*.json
 
-/Old
+*.json
 
 *.txt
 
-client
+Cargo.lock
+
+client.json
 
 .DS_Store
-
-test.py
