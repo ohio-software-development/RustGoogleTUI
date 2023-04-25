@@ -2,7 +2,7 @@
 
 Rust TUI for Software Tools project utilizing the Google API for CS3560 section 100.
 
-# RustBlackBoardTUI Dev Branch
+# RustGoogleTUI Dev Branch
 
 This is the Developer Branch which will be used to test new features and which through pull requests, will be merged with the main branch after successful testing.
 
