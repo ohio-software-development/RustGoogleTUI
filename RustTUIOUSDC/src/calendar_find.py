@@ -1,3 +1,4 @@
+
 from __future__ import print_function
 
 import datetime
@@ -18,16 +19,6 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis
 # Month Constant 
 MONTHS_LENGTH = [31,28,31,30,31,30,31,31,30,31,30,31]
 MONTHS_LENGTH_LEAP = [31,29,31,30,31,30,31,31,30,31,30,31]
-
-#def main():
-#    """Shows basic usage of the Google Calendar API.
-#    Prints the start and name of the next 10 events on the user's calendar.
-#    """
-#    creds = credentials()
-#    service = getProfile(creds)
-#    displayEvents(service)
-
-
 
 def credentials():
     creds = None
@@ -67,7 +58,7 @@ def getProfile(creds):
 def inputDate(year, month, day):
     try:
         fromDate = datetime.datetime(int(year),int(month),int(day),0,0,0).isoformat() + 'Z'
-        toDate = datetime.datetime(int(year),int(month),int(day),23,59,59).isoformat() + 'Z'     
+        toDate = datetime.datetime(int(year),int(month),int(day),23,59,59).isoformat() + 'Z'
     except(ValueError):
         print('Error! Date is not valid.')
     except(TypeError):
@@ -80,33 +71,15 @@ def inputDate(year, month, day):
 # Uses function inputDate to get date.
 def displayEvents(service, fromDate, toDate):
         
-    #now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    
-    # print('Getting the upcoming events')
-    # events_result = service.events().list(calendarId='primary', timeMin=fromDate,timeMax=toDate,
-    #                                         singleEvents=True,orderBy='startTime').execute()
-    # events = events_result.get('items', [])
-
-    # if not events:
-    #     print('No upcoming events found.')
-    #     return
-
-    # for event in events:
-        
-    #     start = event['start'].get('dateTime', event['start'].get('date'))
-    #     print(start, event['summary'])
-    #     pptest = event['start'].get('dateTime')
-    #     print(pptest)
-    file = open("calendarDay.txt", "w")
+    file = open("calendar.txt", "w")
     events_result = service.events().list(calendarId='primary', timeMin=fromDate,timeMax=toDate,
                                             singleEvents=True,orderBy='startTime').execute()
     events = events_result.get('items', [])
 
     if not events:
-        file.write('Today|No upcoming events found.|\n')
+        file.write('|No upcoming events found.|\n')
         return
 
-    # Prints the start and name of the next 10 events
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         file.write(event['summary'] + "|" + start + "|\n")
@@ -118,4 +91,3 @@ fromDate, toDate = inputDate(year, month, day)
 creds = credentials()
 service = getProfile(creds)
 displayEvents(service,fromDate,toDate)
-

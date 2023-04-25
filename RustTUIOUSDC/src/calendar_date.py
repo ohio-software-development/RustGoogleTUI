@@ -36,17 +36,17 @@ def main():
     # created automatically when the authorization flow completes for the first
     # time.
     if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('../token.json', SCOPES)
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                '../client.json', SCOPES)
+                'client.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('../token.json', 'w') as token:
+        with open('token.json', 'w') as token:
             token.write(creds.to_json())
         
     try:
@@ -62,17 +62,18 @@ def main():
 # date specified is not valid according to the Gregorian Calendar.
 # Is used by other functions.
 def inputDate():
-    fromDate = datetime.datetime.today()
-    toDate = datetime.datetime(int(fromDate.year),int(fromDate.month),int(fromDate.day),23,59,59)
+    fromDate = datetime.datetime.today().astimezone()
+    fromDate.replace(hour=0,minute=0,second=0)
+    toDate = datetime.datetime(int(fromDate.year),int(fromDate.month),int(fromDate.day),23,59,59).astimezone()
     
-    return fromDate.isoformat() + 'Z' ,toDate.isoformat() + 'Z'
+    return fromDate.isoformat(),toDate.isoformat()
 
 
 # Displays all events that happened on a day as specified by the user.
 # Uses function inputDate to get date.
 def output_events(service):
 
-    file = open("../calendar.txt", "w")
+    file = open("calendar.txt", "w")
 
     fromDate,toDate = inputDate()
         
@@ -81,7 +82,7 @@ def output_events(service):
     events = events_result.get('items', [])
 
     if not events:
-        file.write('Today|No upcoming events found.|\n')
+        file.write('|No upcoming events found.|\n')
         return
 
     # Prints the start and name of the next 10 events

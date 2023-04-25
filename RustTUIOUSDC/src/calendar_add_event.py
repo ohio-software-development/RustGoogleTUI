@@ -63,7 +63,7 @@ def addEvents(service, fromDate, toDate, summary, description, atList):
         'timeZone': 'America/New_York',
     },
     'recurrence': [
-        'RRULE:FREQ=DAILY;COUNT=2'
+        'RRULE:FREQ=DAILY;COUNT=1'
     ],
     'attendees': atList,
     'reminders': {
@@ -77,7 +77,10 @@ def addEvents(service, fromDate, toDate, summary, description, atList):
     
     
     event = service.events().insert(calendarId='primary', body=event).execute()
-    print ('Event created: %s' % (event.get('htmlLink')))
+    file = open("html_link.txt", "w")
+    file.write(event.get('htmlLink'))
+    
+    #print ('Event created: %s' % (event.get('htmlLink')))
     return
 
 def inputDate(year, month, day, fromHour, fromMinute, endYear, endMonth, endDay, toHour, toMinute):
@@ -98,12 +101,13 @@ def inputDate(year, month, day, fromHour, fromMinute, endYear, endMonth, endDay,
 year = sys.argv[1]
 month = sys.argv[2]
 day = sys.argv[3]
-fromHour = sys.argv[4]
-fromMinute = sys.argv[5]
 
-endYear = sys.argv[6]
-endMonth = sys.argv[7]
-endDay = sys.argv[8]
+endYear = sys.argv[4]
+endMonth = sys.argv[5]
+endDay = sys.argv[6]
+
+fromHour = sys.argv[7]
+fromMinute = sys.argv[8]
 toHour = sys.argv[9]
 toMinute = sys.argv[10]
 
