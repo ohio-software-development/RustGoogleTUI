@@ -1,17 +1,17 @@
-use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
-use cursive::views::{Dialog, EditView, LinearLayout, TextView, Button, OnEventView, SelectView};
-use cursive::{event, menu, Cursive, CursiveExt, View};
-use cursive::event::EventResult;
 use cursive::align::HAlign;
+use cursive::event::EventResult;
+use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
 use cursive::traits::*;
+use cursive::views::{Button, Dialog, EditView, LinearLayout, OnEventView, SelectView, TextView};
+use cursive::{event, menu, Cursive, CursiveExt, View};
 use cursive_extras::*;
 use std::fs;
 use std::process::Command;
-mod image_view;
 use std::thread;
+use std::rc::Rc;
 
-use std::fs::File;
-use std::io::prelude::*;
+mod image_view;
+
 fn main() {
     thread::spawn(|| {
         // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
@@ -68,14 +68,13 @@ fn find_token(siv: &mut Cursive){
     siv.add_layer(login_check);
 }
 
-
 fn go_back_to_main_dialog(siv: &mut Cursive) {
     let mut img = image_view::ImageView::new(40, 14);
-    img.set_image("../images/download.jpeg");
+    img.set_image("./images/download.jpeg");
     let image_viewer = Dialog::around(img);
 
     let current_val =
-        fs::read_to_string("description.txt").expect("Should have been able to read the file");
+        fs::read_to_string("./description.txt").expect("Should have been able to read the file");
 
     let layout = LinearLayout::vertical()
         .child(TextView::new("Display:"))
@@ -122,7 +121,7 @@ fn go_back_to_main_dialog(siv: &mut Cursive) {
         .add_leaf("Logout", |s| s.quit());
 
     // Show the main dialog box
-    let _main_menu = Dialog::around(layout).title("MyTui");
+    let _main_menu = Dialog::around(layout).title("GoogleTUI");
 
     // image
     siv.add_layer(_main_menu);
@@ -154,60 +153,94 @@ fn swap_data(siv: &mut Cursive, name: &str) {
     siv.add_layer(content);
 }
 
-fn send_layer(siv: &mut Cursive) {
+fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
+{
+
+    let output = format!("To: {}\nSubject: {}", to, subject);
     siv.pop_layer();
 
-    let subject = "Type subject here...";
-    let email_msg = "Type your email here...";
-    let recipient = "Type receiver here...";
+    let to_copy = Rc::new(to.to_owned());
 
-    // let layout = LinearLayout::vertical()
-    //     .child(TextView::new("Gmail:"))
-    //     .child(TextView::new("Display:"))
-    //     .child(EditView::new().content(recipient))
-    //     .child(EditView::new().content(subject))
-    //     .child(EditView::new().on_submit(send).content(email_msg));
+    let to_copy_clone = Rc::clone(&to_copy);
 
+    let sub_copy = Rc::new(subject.to_owned());
+
+    let sub_copy_clone = Rc::clone(&sub_copy);
     siv.add_layer(
         Dialog::new()
-            .title("Enter your name")
-            .padding_lrtb(2, 2, 4, 4)
+            .title("SEND")
             .content(
-                EditView::new().content("To: ")
-                    .with_name("to")
-                    .fixed_width(20),
-            ).padding_bottom(5)
-            .content(
-                EditView::new().content("Subject: ")
-                    .with_name("subject")
+                EditView::new()
+                    .on_submit(move |siv, message| {
+                        send(siv, &to_copy_clone, &sub_copy_clone, message);
+                        siv.pop_layer();
+                    })
+                    .with_name("message")
                     .fixed_width(20),
             )
-            .content(
-                EditView::new().content("Message:")
-                    .with_name("msg_text")
-                    .fixed_width(20),
-            )
-            .button("Ok", |s| {
-                let to = s
-                    .call_on_name("to", |view: &mut EditView| {
+            .button("Next", move |siv| {
+                let message = siv
+                    .call_on_name("message", |view: &mut EditView| {
                         view.get_content()
                     })
                     .unwrap();
-                let subject = s
+                send(siv, &to_copy, &sub_copy, &message);
+                siv.pop_layer();
+            }),
+    );
+}
+
+fn sub_layer(siv: &mut Cursive, to: &str) {
+    siv.pop_layer();
+
+    let to_copy = Rc::new(to.to_owned());
+
+    let to_copy_clone = Rc::clone(&to_copy);
+    siv.add_layer(
+        Dialog::new()
+            .title("Test")
+            .content(
+                EditView::new()
+                    .on_submit(move |siv, subject| {
+                        mess_layer(siv, &to_copy_clone, subject);
+                    })
+                    .with_name("subject")
+                    .fixed_width(20),
+            )
+            .button("Next", move |siv| {
+                let subject = siv
                     .call_on_name("subject", |view: &mut EditView| {
                         view.get_content()
                     })
                     .unwrap();
-                let msg_text =  s
-                .call_on_name("msg_text", |view: &mut EditView| {
-                    view.get_content()
-                })
-                .unwrap();
-                send(s, &to, &subject, &msg_text);
+                mess_layer(siv, &to_copy, &subject)
+            }),
+    );
+}
+
+fn send_layer(siv: &mut Cursive) {
+    siv.pop_layer();
+    
+    siv.add_layer(
+        Dialog::new()
+            .title("Enter recipient's email")
+            .content(
+                EditView::new()
+                    .on_submit(sub_layer)
+                    .with_name("to")
+                    .fixed_width(20),
+            )
+            .button("Next", |siv| {
+                let to = siv
+                    .call_on_name("to", |view: &mut EditView| {
+                        view.get_content()
+                    })
+                    .unwrap();
+                sub_layer(siv, &to);
             }),
     );
 
-    //siv.add_layer(layout);
+
 }
 
 // , recipient: &str, subject: &str, message: &str
@@ -229,7 +262,8 @@ fn gmail(siv: &mut Cursive) {
     let recent_email =
         fs::read_to_string("description.txt").expect("Should have been able to read the file");
     let until = "APIMAIL#1"; //Email 1 indicator
-    let positionPlace = match recent_email.find(until){ //Finds position of APIMAIL#1 in recent_email string
+    let positionPlace = match recent_email.find(until) {
+        //Finds position of APIMAIL#1 in recent_email string
         Some(pos) => pos,
         None => recent_email.len(),
     };
@@ -241,23 +275,20 @@ fn gmail(siv: &mut Cursive) {
     let mut isMail = true;
     while isMail {
         let untilNum = format!("{}{}", "APIMAIL#", counter);
-        let positionOfAPIMAIL = match recent_email.find(&untilNum){
+        let positionOfAPIMAIL = match recent_email.find(&untilNum) {
             Some(pos) => pos,
             None => recent_email.len(),
         };
-        if positionOfAPIMAIL != recent_email.len()
-        {
+        if positionOfAPIMAIL != recent_email.len() {
             counter += 1;
-        }
-        else{
+        } else {
             isMail = false;
         }
     }
 
-    let mut select = SelectView::new()
-        .autojump();
+    let mut select = SelectView::new().autojump();
 
-    for i in 0..counter{
+    for i in 0..counter {
         let show = i + 1;
         select.add_item(show.to_string(), i);
     }
@@ -273,7 +304,7 @@ fn gmail(siv: &mut Cursive) {
             let cb = s.select_down(1);
             Some(EventResult::Consumed(Some(cb)))
         });
-    
+
     let emailCount = format!("{}{}{}", "You have ", counter, " emails.");
     // load most recent email
     let layout = LinearLayout::vertical()
@@ -281,54 +312,56 @@ fn gmail(siv: &mut Cursive) {
         .child(TextView::new(out)) //Output most recent email
         .child(Button::new("Back", go_back_to_main_dialog)) //Go back to main menu
         .child(TextView::new(emailCount))
-        .child(Dialog::around(select.scrollable().fixed_size((20, 10))).title("Select which email you want to view"),
-    );
+        .child(
+            Dialog::around(select.scrollable().fixed_size((20, 10)))
+                .title("Select which email you want to view"),
+        );
     siv.add_layer(layout);
 }
-
 
 fn go_to_next_email(siv: &mut Cursive, num: &i32) {
     siv.pop_layer(); //Getting rid of previous layer
 
     let numNew = *num;
-    if numNew == 0
-    {   
+    if numNew == 0 {
         let recent_email =
             fs::read_to_string("description.txt").expect("Should have been able to read the file");
-        let mut hold = format!("{}{}", "APIMAIL#", numNew+1);
+        let mut hold = format!("{}{}", "APIMAIL#", numNew + 1);
         let untilNum = hold.as_str();
-        let positionPlace = match recent_email.find(untilNum){ //Finds position of APIMAIL#1 in recent_email string
+        let positionPlace = match recent_email.find(untilNum) {
+            //Finds position of APIMAIL#1 in recent_email string
             Some(pos) => pos,
             None => recent_email.len(),
         };
-    
+
         let out = &recent_email[0..positionPlace]; //out is email file from beginning to APIMAIL#1
-    
+
         let showEmail = Dialog::new()
             .content(TextView::new(out))
             .button("Back", gmail);
         siv.add_layer(showEmail);
-    }
-    else{
+    } else {
         let recent_email =
             fs::read_to_string("description.txt").expect("Should have been able to read the file");
         let mut hold1 = format!("{}{}", "APIMAIL#", numNew);
         let untilNum1 = hold1.as_str();
 
-        let positionPlace1 = match recent_email.find(untilNum1){ //Finds position of APIMAIL#1 in recent_email string
+        let positionPlace1 = match recent_email.find(untilNum1) {
+            //Finds position of APIMAIL#1 in recent_email string
             Some(pos) => pos,
             None => recent_email.len(),
         };
-        
+
         let mut hold2 = format!("{}{}", "APIMAIL#", numNew + 1);
         let untilNum2 = hold2.as_str();
-        let positionPlace2 = match recent_email.find(untilNum2){ //Finds position of APIMAIL#1 in recent_email string
+        let positionPlace2 = match recent_email.find(untilNum2) {
+            //Finds position of APIMAIL#1 in recent_email string
             Some(pos) => pos,
             None => recent_email.len(),
         };
-    
+
         let out = &recent_email[positionPlace1..positionPlace2]; //out is email file from beginning to APIMAIL#1
-    
+
         let showEmail = Dialog::new()
             .content(TextView::new(out))
             .button("Back", gmail);
@@ -807,7 +840,6 @@ fn calendar(siv: &mut Cursive) {
 
 }
 
-
 fn save_mail(_: &mut Cursive, x: &str) {
     let data = x;
     fs::write("description.txt", data).expect("Unable to write file");
@@ -819,7 +851,11 @@ fn open_search(siv: &mut Cursive) {
     let layout = LinearLayout::vertical()
         .child(TextView::new("Gmail:"))
         .child(TextView::new("Display:"))
-        .child(EditView::new().on_submit(search_now).content(search_message));
+        .child(
+            EditView::new()
+                .on_submit(search_now)
+                .content(search_message),
+        );
     // Remove the subdialog box
     siv.pop_layer();
 
@@ -827,7 +863,7 @@ fn open_search(siv: &mut Cursive) {
     let gmail_layer = Dialog::around(layout).button("Back", go_back_to_main_dialog);
     siv.add_layer(gmail_layer);
 }
-fn search_now (_: &mut Cursive, message: &str){
+fn search_now(_: &mut Cursive, message: &str) {
     let path = "https://www.google.com/search?q=";
     let search_path = format!("{}{}", path, message);
     match open::that(search_path.clone()) {
@@ -856,3 +892,4 @@ fn open_slides(_: &mut Cursive) {
         Err(err) => eprintln!("An error occurred when opening '{}': {}", path, err),
     }
 }
+

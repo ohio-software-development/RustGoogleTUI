@@ -1,5 +1,6 @@
+
 # ------------------------------------------------------------
-# File to save events during week into calendar.txt
+# File to save events on date input by user into calendar.txt
 # ------------------------------------------------------------
 
 from __future__ import print_function
@@ -17,12 +18,19 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 # If modifying these scopes, delete the file token.json.
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
-    
-def credentials():
+# Month Constant 
+MONTHS_LENGTH = [31,28,31,30,31,30,31,31,30,31,30,31]
+MONTHS_LENGTH_LEAP = [31,29,31,30,31,30,31,31,30,31,30,31]
+
+def main():
+
+    """Shows basic usage of the Google Calendar API.
+    Prints the start and name of the next 10 events on the user's calendar.
+    """
     creds = None
-
+    cont = True
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
@@ -34,61 +42,51 @@ def credentials():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-
                 'client.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
-    return (creds)
-
-
-# some accessor functions
-# returns profile
-def getProfile(creds):
-    # Connect to the Gmail API
-    service = build('calendar', 'v3', credentials=creds)
+        
     try:
-        return service
-    except Exception as error:
+        service = build('calendar', 'v3', credentials=creds)
+        output_events(service)
+        
+
+    except HttpError as error:
         print('An error occurred: %s' % error)
+
+# Asks user to input data for a specific date. Will try again if
+# input is invalid due to use of other symbols besides numbers or
+# date specified is not valid according to the Gregorian Calendar.
+# Is used by other functions.
+def inputDate():
+    fromDate = datetime.datetime.today()
+    toDate = datetime.datetime(int(fromDate.year),int(fromDate.month),int(fromDate.day),23,59,59)
+    
+    return fromDate.isoformat() + 'Z' ,toDate.isoformat() + 'Z'
 
 # Displays all events that happened on a day as specified by the user.
 # Uses function inputDate to get date.
+def output_events(service):
 
-def output_days_events(service):
+    file = open("../calendar.txt", "w")
 
-    file = open("calendar.txt", "w")
-    
-    # now = datetime.datetime.utcnow().isoformat() + 'Z'  # 'Z' indicates UTC time
-    # print('Getting the upcoming 10 events')
-    # events_result = service.events().list(calendarId='primary', timeMin=now,
-    #                                         maxResults=10, singleEvents=True,
-    #                                         orderBy='startTime').execute()
-
-    
-    
-    fromDate = datetime.datetime.now().astimezone().isoformat()
-    
-    toDate = (datetime.datetime.now().astimezone() + datetime.timedelta(days=7)).isoformat()
-    
+    fromDate,toDate = inputDate()
+        
     events_result = service.events().list(calendarId='primary', timeMin=fromDate,timeMax=toDate,
                                             singleEvents=True,orderBy='startTime').execute()
     events = events_result.get('items', [])
-    
+
     if not events:
-        file.write('|No upcoming events found.|\n')
+        file.write('Today|No upcoming events found.|\n')
         return
 
+    # Prints the start and name of the next 10 events
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         file.write(event['summary'] + "|" + start + "|\n")
         
+if __name__ == '__main__':
+    main()
 
-creds = credentials()
-service = getProfile(creds)
-try:
-    output_days_events(service)
-
-except HttpError as error:
-    print('An error occurred: %s' % error)

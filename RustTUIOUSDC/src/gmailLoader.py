@@ -12,8 +12,6 @@ from email.message import EmailMessage
 import email
 import sys
 
-
-
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
 
@@ -37,7 +35,6 @@ def credentials():
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
     return (creds)
-
 
 # some accessor functions
 # returns profile
@@ -90,13 +87,13 @@ def getSnippet(service, msg_id):
         print('An error occurred: %s' % error)
 
 
-
 #credentials for OAUTH
 creds = credentials()
 
 lst = getMessages(creds).execute()
 x = 0
-numMail = 20
+
+numMail = 10
 
 # option to load more mail
 if len(sys.argv) > 1:
