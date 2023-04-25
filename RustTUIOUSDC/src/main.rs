@@ -161,8 +161,10 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
     let output = format!("To: {}\nSubject: {}", to, subject);
     siv.pop_layer();
 
+    //Makes copy of email recipient
     let to_copy = Rc::new(to.to_owned());
 
+    //Clones the copy of the recipient, repeated for the subject
     let to_copy_clone = Rc::clone(&to_copy);
 
     let sub_copy = Rc::new(subject.to_owned());
@@ -176,6 +178,9 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
                     .on_submit(move |siv, message| {
                         send(siv, &to_copy_clone, &sub_copy_clone, message);
                         siv.pop_layer();
+                        siv.add_layer(Dialog::new()
+                            .title("Successfully Sent Email")//Pop up message when email is sent using enter key
+                            .button("Back to Main Menu", go_back_to_main_dialog)); 
                     })
                     .with_name("message")
                     .fixed_width(20),
@@ -189,8 +194,8 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
                 send(siv, &to_copy, &sub_copy, &message);
                 siv.pop_layer();
                 siv.add_layer(Dialog::new()
-                    .title("Successfully Sent Email")
-                    .button("Back to Main Menu", go_back_to_main_dialog));
+                    .title("Successfully Sent Email")//Pop up message when email is sent with "Send Message"
+                    .button("Back to Main Menu", go_back_to_main_dialog)); 
             }),
     );
    
@@ -199,8 +204,10 @@ fn mess_layer(siv: &mut Cursive, to: &str, subject: &str)
 fn sub_layer(siv: &mut Cursive, to: &str) {
     siv.pop_layer();
 
+    //Copies the recipient string in a pointer
     let to_copy = Rc::new(to.to_owned());
 
+    //Makes a clone of the copied string
     let to_copy_clone = Rc::clone(&to_copy);
     siv.add_layer(
         Dialog::new()
@@ -208,7 +215,7 @@ fn sub_layer(siv: &mut Cursive, to: &str) {
             .content(
                 EditView::new()
                     .on_submit(move |siv, subject| {
-                        mess_layer(siv, &to_copy_clone, subject);
+                        mess_layer(siv, &to_copy_clone, subject); //Goes to message layer when user presses enter
                     })
                     .with_name("subject")
                     .fixed_width(20),
@@ -219,7 +226,7 @@ fn sub_layer(siv: &mut Cursive, to: &str) {
                         view.get_content()
                     })
                     .unwrap();
-                mess_layer(siv, &to_copy, &subject)
+                mess_layer(siv, &to_copy, &subject) //Goes to message layer when user presses "Next"
             }),
     );
 }
@@ -227,12 +234,15 @@ fn sub_layer(siv: &mut Cursive, to: &str) {
 fn send_layer(siv: &mut Cursive) {
     siv.pop_layer();
     
+    //In order to send email it goes through the 3 pieces needed to send an email
+    //the recipient:to, subject of the email:subject, message within email:message
+    //Goes one by one, so input of to -> input of subject -> input of message
     siv.add_layer(
         Dialog::new()
             .title("Enter recipient's email")
             .content(
                 EditView::new()
-                    .on_submit(sub_layer)
+                    .on_submit(sub_layer) //Goes to subject layer when user presses enter
                     .with_name("to")
                     .fixed_width(20),
             )
@@ -242,7 +252,7 @@ fn send_layer(siv: &mut Cursive) {
                         view.get_content()
                     })
                     .unwrap();
-                sub_layer(siv, &to);
+                sub_layer(siv, &to); //Goes to subject layer when user presses "Next button"
             }),
     );
 
