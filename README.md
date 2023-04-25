@@ -25,7 +25,7 @@ Idealy, it would also be possible for the user to interact with the calander.
 Rust and the Google API will be used to create the project.
 
 ### Deployment
-Move into "RustBlackBoardTUI/RustTUIOUSDC"
+Move into "RustGoogleTUI/RustTUIOUSDC"
 run "cargo run"
 
 ### Github Repo
