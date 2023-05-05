@@ -15,10 +15,11 @@ Note: MacOS and Windows functionality are untested.
 1. Install python3 and Rust on your computer. Follow the instructions in the following links:
     - Python3: https://www.python.org/downloads/ 
     - Rust: https://www.rust-lang.org/tools/install 
-2. Download code and extract it to home directory
-3. Open a terminal and go to the RustGoogleTUI folder
-4. Run "make" 
-5. Call "tui_proj" in your terminal anywhere in your home directory to access your Gmail!
+2. Download code and extract it to home directory.
+3. Rename RustGoogleTUI-X.X.X folder to RustGoogleTUI 
+4. Open a terminal and go to the RustGoogleTUI folder
+5. Run "make" once
+6. Call "tui_proj" in your terminal anywhere in your home directory to access your Gmail!
 
 ### Team Members
 Brady Phelps, Michael Tan, Preston Rembis, and Alex Bikowski
