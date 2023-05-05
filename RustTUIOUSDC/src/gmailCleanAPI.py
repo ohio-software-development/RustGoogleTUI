@@ -11,6 +11,7 @@ import base64
 from email.message import EmailMessage
 import email
 import sys
+from pathlib import Path
 
 
 # If modifying these scopes, delete the file token.json.
@@ -188,6 +189,7 @@ def custom_send_message(message):
 # to = input("Who would you like to send a message to?")
 # subject = input("Whats the subject?")
 # msg_txt = input("What would you like to send?")
+os.chdir(str(Path.home()) + "/RustGoogleTUI/RustTUIOUSDC/src/")
 sender = ""
 to = "bp309420@ohio.edu"
 subject = "testest2"

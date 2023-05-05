@@ -1,4 +1,3 @@
-use cursive::align::HAlign;
 use cursive::event::EventResult;
 use cursive::theme::{BaseColor, Color, PaletteColor, Theme};
 use cursive::traits::*;
@@ -13,8 +12,13 @@ use std::rc::Rc;
 use std::fs::File;
 use std::io::prelude::*;
 mod image_view;
+use std::path::Path;
+use std::env::set_current_dir;
 
 fn main() {
+    let rpath = dirs::home_dir().unwrap().display().to_string() + "/RustGoogleTUI/RustTUIOUSDC/src/";
+    let current_directory = Path::new(&rpath);
+    set_current_dir(current_directory);
     thread::spawn(|| {
         // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
         let output = Command::new("python3")

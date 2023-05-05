@@ -11,6 +11,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from pathlib import Path
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
@@ -48,6 +49,6 @@ def getProfile(creds):
     except Exception as error:
         print('An error occurred: %s' % error)
 
-
+os.chdir(str(Path.home()) + "/RustGoogleTUI/RustTUIOUSDC/src/")
 creds = credentials()
 service = getProfile(creds)

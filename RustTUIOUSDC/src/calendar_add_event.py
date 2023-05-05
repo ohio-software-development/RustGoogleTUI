@@ -12,6 +12,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import sys
+from pathlib import Path
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
@@ -97,7 +98,7 @@ def inputDate(year, month, day, fromHour, fromMinute, endYear, endMonth, endDay,
             
     return fromDate,toDate
 
-
+os.chdir(str(Path.home()) + "/RustGoogleTUI/RustTUIOUSDC/src/")
 year = sys.argv[1]
 month = sys.argv[2]
 day = sys.argv[3]

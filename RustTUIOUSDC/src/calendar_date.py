@@ -17,6 +17,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from pathlib import Path
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
@@ -30,6 +31,7 @@ def main():
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
     """
+    os.chdir(str(Path.home()) + "/RustGoogleTUI/RustTUIOUSDC/src/")
     creds = None
     cont = True
     # The file token.json stores the user's access and refresh tokens, and is

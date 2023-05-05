@@ -11,6 +11,7 @@ import base64
 from email.message import EmailMessage
 import email
 import sys
+from pathlib import Path
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify','https://www.googleapis.com/auth/calendar']
@@ -88,6 +89,7 @@ def getSnippet(service, msg_id):
 
 
 #credentials for OAUTH
+os.chdir(str(Path.home()) + "/RustGoogleTUI/RustTUIOUSDC/src/")
 creds = credentials()
 
 lst = getMessages(creds).execute()
