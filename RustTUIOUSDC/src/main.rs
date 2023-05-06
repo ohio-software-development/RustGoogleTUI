@@ -19,6 +19,7 @@ fn main() {
     let rpath = dirs::home_dir().unwrap().display().to_string() + "/RustGoogleTUI/RustTUIOUSDC/src/";
     let current_directory = Path::new(&rpath);
     set_current_dir(current_directory);
+    std::fs::File::create("description.txt").expect("error");
     thread::spawn(|| {
         // SWITCH TO PYTHON IF RUNNING REGULAR PYTHON AND NOT PYTHON3 (also change at line 143)
         let output = Command::new("python3")
